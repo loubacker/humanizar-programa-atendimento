@@ -1,0 +1,178 @@
+<div align="center">
+  <h1>Humanizar - Programa de Atendimento (Microservice)</h1>
+  <p>Gestão do programa de atendimento do paciente no ecossistema Humanizar.</p>
+
+  <img alt="Java" src="https://img.shields.io/badge/Java-25-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" />
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring_Boot-4.0.4-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" />
+  <img alt="GraalVM" src="https://img.shields.io/badge/GraalVM_Native-25-E76F00?style=for-the-badge&logo=oracle&logoColor=white" />
+  <img alt="RabbitMQ" src="https://img.shields.io/badge/RabbitMQ-%23FF6600.svg?style=for-the-badge&logo=rabbitmq&logoColor=white" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
+</div>
+
+<br/>
+
+Serviço orientado a EDA, com API HTTP interna protegida. Recebe comandos do `humanizar-acolhimento` via RabbitMQ, persiste o programa de atendimento (semanas, escolas, núcleos, abordagens), publica comandos via outbox transacional para o `humanizar-nucleo-relacionamento` e finaliza pendências por meio de callbacks upstream e downstream.
+
+## Arquitetura e Padrões
+
+- Arquitetura Hexagonal (`application`, `domain`, `infrastructure`).
+- Envelope inbound obrigatório para operações mutáveis (`InboundEnvelopeDTO<T>`).
+- Outbox transacional para publicação confiável de comandos RabbitMQ.
+- Controle de consistência eventual com `pending_programa_atendimento` e `pending_target_status`.
+- Callback inbound com idempotência por `processed_event`.
+- ACK/NACK manual do RabbitMQ com política explícita por tipo de erro.
+- Execução otimizada com Virtual Threads e opção de runtime em binário nativo (GraalVM Native Image).
+
+## Interfaces internas protegidas (REST)
+
+Base path: `/api/v1/programa-atendimento`
+
+- `POST /register`
+    - Cria programa de atendimento e gera o comando outbound `cmd.programa.created.v1`.
+    - Body obrigatório: `InboundEnvelopeDTO<ProgramaAtendimentoDTO>`.
+- `PUT /update/{patientId}`
+    - Atualiza programa de atendimento e gera o comando outbound `cmd.programa.updated.v1`.
+    - Body obrigatório: `InboundEnvelopeDTO<ProgramaAtendimentoDTO>`.
+    - Regra obrigatória: `path.patientId == payload.patientId`.
+- `DELETE /delete/{patientId}`
+    - Remove programa de atendimento e gera o comando outbound `cmd.programa.deleted.v1`.
+    - Body obrigatório: `InboundEnvelopeDTO<ProgramaDeleteDTO>`.
+    - Regra obrigatória: `path.patientId == payload.patientId`.
+- `GET /{patientId}`
+    - Retorna os dados atuais do programa de atendimento do paciente.
+
+## 🔄 Comunicação Assíncrona (RabbitMQ)
+
+### Inbound — Comandos do Acolhimento
+
+**Exchange `humanizar.acolhimento.command`**
+- `cmd.acolhimento.created.v1`
+- `cmd.acolhimento.updated.v1`
+- `cmd.acolhimento.deleted.v1`
+
+Fila principal:
+- `humanizar.programa-atendimento.acolhimento`
+
+DLQ:
+- `humanizar.programa-atendimento.acolhimento.dlq`
+
+Contrato consumido: `InboundEnvelopeDTO<T>` (envelope com metadados EDA + payload tipado).
+
+### Outbound — Comandos para Núcleo de Relacionamento
+
+**Exchange `humanizar.programa.command`**
+- `cmd.programa.created.v1`
+- `cmd.programa.updated.v1`
+- `cmd.programa.deleted.v1`
+
+Contrato publicado: `OutboundEnvelopeDTO<T>` (metadados EDA + payload tipado).
+
+### Outbound — Callbacks para Acolhimento
+
+**Exchange `humanizar.acolhimento.event`**
+- `ev.acolhimento.programa.processed.v1`
+- `ev.acolhimento.programa.rejected.v1`
+
+Contrato publicado: `CallbackDTO`.
+
+### Inbound — Callbacks do Núcleo de Relacionamento
+
+**Exchange `humanizar.programa.event`**
+- `ev.programa.nucleo-relacionamento.processed.v1`
+- `ev.programa.nucleo-relacionamento.rejected.v1`
+
+Fila principal:
+- `callback.programa.nucleo-relacionamento`
+
+DLQ:
+- `callback.programa.nucleo-relacionamento.dlq`
+
+Contrato consumido: `CallbackDTO`.
+
+## ⛓️‍💥 Resiliência e Tolerância a Falhas
+
+### ACK/NACK manual
+
+`rabbitListenerContainerFactory` roda com `AcknowledgeMode.MANUAL` (configuração Java).
+
+Política no consumer inbound:
+- `ack`: sucesso e evento duplicado.
+- `nackRetry` (`requeue=true`): erro retentável.
+- `nackDeadLetter` (`requeue=false`): parse inválido e erro não retentável.
+
+Implementação central: `RabbitAcknowledgementConfig`.
+
+### Outbox states
+
+- `PENDING`
+- `PUBLISHED`
+- `FAILED`
+- `ARCHIVED`
+
+### Idempotência
+
+Antes do processamento da regra, o consumer valida duplicidade por meio do `ProcessedEventGuard`.
+
+## 🔐 Segurança
+
+- API interna protegida por OAuth2 Resource Server JWT.
+- JWK configurado por `AUTH_SERVER_URL`.
+- Sem exposição de endpoint público para uso externo.
+
+## Estrutura do Projeto
+
+```text
+src/main/java/com/humanizar/programaatendimento/
+|-- application/
+|   |-- catalog/                       # ExchangeCatalog, QueueCatalog, RoutingKeyCatalog
+|   |-- inbound/                       # DTOs e mappers de envelope/payload (acolhimento + programa)
+|   |-- outbound/                      # DTOs e mappers de comando/callback
+|   |-- service/                       # orquestracao create/update/delete/retrieve/callback
+|   `-- usecase/                       # regras de aplicacao por contexto (programa, outbox, callback, acolhimento)
+|-- domain/                            # modelos, enums, ports, exceptions
+`-- infrastructure/                    # adapters, controllers, rabbit config, outbox, persistence
+```
+
+## Como executar localmente
+
+### Pré-requisitos
+- JDK 25
+- Maven 3.9+
+- PostgreSQL
+- RabbitMQ
+
+### Variáveis de Ambiente (`.env`)
+
+```env
+DB_URL=jdbc:postgresql://localhost:5432/humanizar_programa_atendimento
+DB_USERNAME=postgres
+DB_PASSWORD=secret
+RABBITMQ_URL=amqp://admin:admin@localhost:5672
+AUTH_SERVER_URL=http://localhost:8080
+```
+
+### Execução local (JVM)
+
+```bash
+./mvnw clean install -DskipTests
+./mvnw spring-boot:run
+```
+
+Porta padrao: `9002`
+Health check: `http://localhost:9002/actuator/health`
+
+## 🐳 Docker Native (GraalVM)
+
+O Dockerfile do módulo usa build multi-stage com GraalVM Native Image:
+
+1. Build stage (`ghcr.io/graalvm/native-image-community:25`) compila com:
+   - `./mvnw -Pnative -DskipTests native:compile`
+2. Runtime stage (`debian:bookworm-slim`) executa binario nativo:
+   - `/app/app-binario`
+
+Exemplo:
+
+```bash
+docker build -t humanizar-programa-atendimento:native .
+docker run --rm -p 9002:9002 --env-file .env humanizar-programa-atendimento:native
+```

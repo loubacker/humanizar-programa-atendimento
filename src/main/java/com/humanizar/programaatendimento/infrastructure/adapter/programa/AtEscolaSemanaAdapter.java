@@ -1,0 +1,100 @@
+package com.humanizar.programaatendimento.infrastructure.adapter.programa;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
+import com.humanizar.programaatendimento.domain.model.programa.AtEscolaSemana;
+import com.humanizar.programaatendimento.domain.model.programa.AtEscolaSemanaSchedule;
+import com.humanizar.programaatendimento.domain.port.programa.AtEscolaSemanaPort;
+import com.humanizar.programaatendimento.domain.port.programa.AtEscolaSemanaSchedulePort;
+import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.AtEscolaSemanaEntity;
+import com.humanizar.programaatendimento.infrastructure.persistence.repository.programa.AtEscolaSemanaRepository;
+
+@Component
+public class AtEscolaSemanaAdapter implements AtEscolaSemanaPort {
+
+    private final AtEscolaSemanaRepository atEscolaSemanaRepository;
+    private final AtEscolaSemanaSchedulePort atEscolaSemanaSchedulePort;
+
+    public AtEscolaSemanaAdapter(AtEscolaSemanaRepository atEscolaSemanaRepository,
+            AtEscolaSemanaSchedulePort atEscolaSemanaSchedulePort) {
+        this.atEscolaSemanaRepository = atEscolaSemanaRepository;
+        this.atEscolaSemanaSchedulePort = atEscolaSemanaSchedulePort;
+    }
+
+    @Override
+    public AtEscolaSemana save(AtEscolaSemana atEscolaSemana) {
+        AtEscolaSemanaEntity entity = toEntity(atEscolaSemana);
+        AtEscolaSemanaEntity saved = atEscolaSemanaRepository.save(entity);
+        AtEscolaSemanaEntity safe = Objects.requireNonNull(saved, "Erro ao salvar at escola semana");
+        syncSchedules(safe.getId(), atEscolaSemana.getAtEscolaSemanaSchedule());
+        return toDomain(safe);
+    }
+
+    @Override
+    public List<AtEscolaSemana> saveAll(List<AtEscolaSemana> atEscolaSemana) {
+        return atEscolaSemana.stream()
+                .map(this::save)
+                .toList();
+    }
+
+    @Override
+    public List<AtEscolaSemana> findByProgramaAtEscolaId(UUID programaAtEscolaId) {
+        return atEscolaSemanaRepository.findByProgramaAtEscolaId(programaAtEscolaId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void deleteByProgramaAtEscolaId(UUID programaAtEscolaId) {
+        List<AtEscolaSemanaEntity> semanaEntities = atEscolaSemanaRepository
+                .findByProgramaAtEscolaId(programaAtEscolaId);
+        for (AtEscolaSemanaEntity semanaEntity : semanaEntities) {
+            atEscolaSemanaSchedulePort.deleteByAtEscolaSemanaId(semanaEntity.getId());
+        }
+        atEscolaSemanaRepository.deleteByProgramaAtEscolaId(programaAtEscolaId);
+    }
+
+    private AtEscolaSemana toDomain(AtEscolaSemanaEntity entity) {
+        List<AtEscolaSemanaSchedule> schedules = atEscolaSemanaSchedulePort.findByAtEscolaSemanaId(entity.getId());
+        return new AtEscolaSemana(
+                entity.getId(),
+                entity.getProgramaAtEscolaId(),
+                entity.getDiaSemana(),
+                schedules);
+    }
+
+    private AtEscolaSemanaEntity toEntity(AtEscolaSemana domain) {
+        AtEscolaSemanaEntity entity = new AtEscolaSemanaEntity();
+        entity.setId(domain.getId());
+        entity.setProgramaAtEscolaId(Objects.requireNonNull(
+                domain.getProgramaAtEscolaId(),
+                "programaAtEscolaId e obrigatorio para persistir at escola semana"));
+        entity.setDiaSemana(domain.getDiaSemana());
+        return entity;
+    }
+
+    private void syncSchedules(UUID atEscolaSemanaId, List<AtEscolaSemanaSchedule> schedules) {
+        atEscolaSemanaSchedulePort.deleteByAtEscolaSemanaId(atEscolaSemanaId);
+
+        if (schedules == null || schedules.isEmpty()) {
+            return;
+        }
+
+        List<AtEscolaSemanaSchedule> normalized = schedules.stream()
+                .map(schedule -> AtEscolaSemanaSchedule.builder()
+                        .id(schedule.getId())
+                        .atEscolaSemanaId(atEscolaSemanaId)
+                        .nucleoId(schedule.getNucleoId())
+                        .horarioInicio(schedule.getHorarioInicio())
+                        .horarioTermino(schedule.getHorarioTermino())
+                        .turno(schedule.getTurno())
+                        .build())
+                .toList();
+
+        atEscolaSemanaSchedulePort.saveAll(normalized);
+    }
+}
