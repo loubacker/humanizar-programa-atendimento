@@ -28,7 +28,7 @@ import com.humanizar.programaatendimento.application.inbound.dto.programa.Progra
 import com.humanizar.programaatendimento.application.inbound.mapper.InboundDeleteContextMapper;
 import com.humanizar.programaatendimento.application.usecase.outbox.DeleteOutboxCommandUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaSnapshotUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
@@ -59,7 +59,7 @@ class ProgramaDeleteServiceTest {
     @Mock
     private SavePendingProgramaUseCase savePendingProgramaUseCase;
     @Mock
-    private BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
+    private BuildProgramaTemplateUseCase buildProgramaTemplateUsecase;
     @Mock
     private DeleteOutboxCommandUseCase deleteOutboxCommandUseCase;
 

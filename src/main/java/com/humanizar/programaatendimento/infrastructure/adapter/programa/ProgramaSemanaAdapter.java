@@ -4,61 +4,61 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.ProgramaSemanaEntity;
 import org.springframework.stereotype.Component;
 
 import com.humanizar.programaatendimento.domain.model.programa.ProgramaSemana;
 import com.humanizar.programaatendimento.domain.model.programa.ProgramaSemanaSchedule;
-import com.humanizar.programaatendimento.domain.port.programa.ProgramaAtSemanaPort;
+import com.humanizar.programaatendimento.domain.port.programa.ProgramaSemanaPort;
 import com.humanizar.programaatendimento.domain.port.programa.ProgramaSemanaSchedulePort;
-import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.ProgramaAtSemanaEntity;
-import com.humanizar.programaatendimento.infrastructure.persistence.repository.programa.ProgramaAtSemanaRepository;
+import com.humanizar.programaatendimento.infrastructure.persistence.repository.programa.ProgramaSemanaRepository;
 
 @Component
-public class ProgramaAtSemanaAdapter implements ProgramaAtSemanaPort {
+public class ProgramaSemanaAdapter implements ProgramaSemanaPort {
 
-    private final ProgramaAtSemanaRepository programaAtSemanaRepository;
+    private final ProgramaSemanaRepository programaSemanaRepository;
     private final ProgramaSemanaSchedulePort programaSemanaSchedulePort;
 
-    public ProgramaAtSemanaAdapter(ProgramaAtSemanaRepository programaAtSemanaRepository,
-            ProgramaSemanaSchedulePort programaSemanaSchedulePort) {
-        this.programaAtSemanaRepository = programaAtSemanaRepository;
+    public ProgramaSemanaAdapter(ProgramaSemanaRepository programaSemanaRepository,
+                                 ProgramaSemanaSchedulePort programaSemanaSchedulePort) {
+        this.programaSemanaRepository = programaSemanaRepository;
         this.programaSemanaSchedulePort = programaSemanaSchedulePort;
     }
 
     @Override
-    public ProgramaSemana save(ProgramaSemana programaAtSemana) {
-        ProgramaAtSemanaEntity entity = toEntity(programaAtSemana);
-        ProgramaAtSemanaEntity saved = programaAtSemanaRepository.save(entity);
-        ProgramaAtSemanaEntity safe = Objects.requireNonNull(saved, "Erro ao salvar programa semana");
-        syncSchedules(safe.getId(), programaAtSemana.getProgramaSemanaSchedule());
+    public ProgramaSemana save(ProgramaSemana programaSemana) {
+        ProgramaSemanaEntity entity = toEntity(programaSemana);
+        ProgramaSemanaEntity saved = programaSemanaRepository.save(entity);
+        ProgramaSemanaEntity safe = Objects.requireNonNull(saved, "Erro ao salvar programa semana");
+        syncSchedules(safe.getId(), programaSemana.getProgramaSemanaSchedule());
         return toDomain(safe);
     }
 
     @Override
-    public List<ProgramaSemana> saveAll(List<ProgramaSemana> programasAtSemana) {
-        return programasAtSemana.stream()
+    public List<ProgramaSemana> saveAll(List<ProgramaSemana> programasSemana) {
+        return programasSemana.stream()
                 .map(this::save)
                 .toList();
     }
 
     @Override
     public List<ProgramaSemana> findByProgramaAtendimentoId(UUID programaAtendimentoId) {
-        return programaAtSemanaRepository.findByProgramaAtendimentoId(programaAtendimentoId).stream()
+        return programaSemanaRepository.findByProgramaAtendimentoId(programaAtendimentoId).stream()
                 .map(this::toDomain)
                 .toList();
     }
 
     @Override
     public void deleteByProgramaAtendimentoId(UUID programaAtendimentoId) {
-        List<ProgramaAtSemanaEntity> semanaEntities = programaAtSemanaRepository
+        List<ProgramaSemanaEntity> semanaEntities = programaSemanaRepository
                 .findByProgramaAtendimentoId(programaAtendimentoId);
-        for (ProgramaAtSemanaEntity semanaEntity : semanaEntities) {
+        for (ProgramaSemanaEntity semanaEntity : semanaEntities) {
             programaSemanaSchedulePort.deleteByProgramaSemanaId(semanaEntity.getId());
         }
-        programaAtSemanaRepository.deleteByProgramaAtendimentoId(programaAtendimentoId);
+        programaSemanaRepository.deleteByProgramaAtendimentoId(programaAtendimentoId);
     }
 
-    private ProgramaSemana toDomain(ProgramaAtSemanaEntity entity) {
+    private ProgramaSemana toDomain(ProgramaSemanaEntity entity) {
         List<ProgramaSemanaSchedule> schedules = programaSemanaSchedulePort.findByProgramaSemanaId(entity.getId());
         return new ProgramaSemana(
                 entity.getId(),
@@ -67,8 +67,8 @@ public class ProgramaAtSemanaAdapter implements ProgramaAtSemanaPort {
                 schedules);
     }
 
-    private ProgramaAtSemanaEntity toEntity(ProgramaSemana domain) {
-        ProgramaAtSemanaEntity entity = new ProgramaAtSemanaEntity();
+    private ProgramaSemanaEntity toEntity(ProgramaSemana domain) {
+        ProgramaSemanaEntity entity = new ProgramaSemanaEntity();
         entity.setId(domain.getId());
         entity.setProgramaAtendimentoId(Objects.requireNonNull(
                 domain.getProgramaAtendimentoId(),
@@ -87,7 +87,7 @@ public class ProgramaAtSemanaAdapter implements ProgramaAtSemanaPort {
         List<ProgramaSemanaSchedule> normalized = schedules.stream()
                 .map(schedule -> ProgramaSemanaSchedule.builder()
                         .id(schedule.getId())
-                        .programaAtSemanaId(programaSemanaId)
+                        .programaSemanaId(programaSemanaId)
                         .nucleoId(schedule.getNucleoId())
                         .horarioInicio(schedule.getHorarioInicio())
                         .horarioTermino(schedule.getHorarioTermino())
@@ -98,3 +98,4 @@ public class ProgramaAtSemanaAdapter implements ProgramaAtSemanaPort {
         programaSemanaSchedulePort.saveAll(normalized);
     }
 }
+

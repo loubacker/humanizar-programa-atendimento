@@ -3,16 +3,24 @@ package com.humanizar.programaatendimento.infrastructure.persistence.entity.prog
 import java.util.Objects;
 import java.util.UUID;
 
+import com.humanizar.programaatendimento.domain.model.enums.Semana;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "programa_at_escola")
-public class ProgramaAtEscolaEntity {
+@Table(name = "programa_semana", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_programa_semana_dia",
+                columnNames = {"programa_atendimento_id", "dia_semana"})
+})
+public class ProgramaSemanaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,21 +30,18 @@ public class ProgramaAtEscolaEntity {
     @Column(name = "programa_atendimento_id", nullable = false)
     private UUID programaAtendimentoId;
 
-    @Column(name = "nome_profissional")
-    private String nomeProfissional;
-
-    @Column(name = "nome_escola")
-    private String nomeEscola;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dia_semana")
+    private Semana diaSemana;
 
     // Construtores
-    public ProgramaAtEscolaEntity() {
+    public ProgramaSemanaEntity() {
     }
 
-    public ProgramaAtEscolaEntity(UUID id, UUID programaAtendimentoId, String nomeProfissional, String nomeEscola) {
+    public ProgramaSemanaEntity(UUID id, UUID programaAtendimentoId, Semana diaSemana) {
         this.id = id;
         this.programaAtendimentoId = programaAtendimentoId;
-        this.nomeProfissional = nomeProfissional;
-        this.nomeEscola = nomeEscola;
+        this.diaSemana = diaSemana;
     }
 
     // Getters e Setters
@@ -56,20 +61,12 @@ public class ProgramaAtEscolaEntity {
         this.programaAtendimentoId = programaAtendimentoId;
     }
 
-    public String getNomeProfissional() {
-        return nomeProfissional;
+    public Semana getDiaSemana() {
+        return diaSemana;
     }
 
-    public void setNomeProfissional(String nomeProfissional) {
-        this.nomeProfissional = nomeProfissional;
-    }
-
-    public String getNomeEscola() {
-        return nomeEscola;
-    }
-
-    public void setNomeEscola(String nomeEscola) {
-        this.nomeEscola = nomeEscola;
+    public void setDiaSemana(Semana diaSemana) {
+        this.diaSemana = diaSemana;
     }
 
     // equals, hashCode, toString
@@ -79,25 +76,23 @@ public class ProgramaAtEscolaEntity {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        ProgramaAtEscolaEntity that = (ProgramaAtEscolaEntity) o;
+        ProgramaSemanaEntity that = (ProgramaSemanaEntity) o;
         return Objects.equals(id, that.id)
                 && Objects.equals(programaAtendimentoId, that.programaAtendimentoId)
-                && Objects.equals(nomeProfissional, that.nomeProfissional)
-                && Objects.equals(nomeEscola, that.nomeEscola);
+                && diaSemana == that.diaSemana;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, programaAtendimentoId, nomeProfissional, nomeEscola);
+        return Objects.hash(id, programaAtendimentoId, diaSemana);
     }
 
     @Override
     public String toString() {
-        return "ProgramaAtEscolaEntity{" +
+        return "ProgramaSemanaEntity{" +
                 "id=" + id +
                 ", programaAtendimentoId=" + programaAtendimentoId +
-                ", nomeProfissional='" + nomeProfissional + '\'' +
-                ", nomeEscola='" + nomeEscola + '\'' +
+                ", diaSemana=" + diaSemana +
                 '}';
     }
 }

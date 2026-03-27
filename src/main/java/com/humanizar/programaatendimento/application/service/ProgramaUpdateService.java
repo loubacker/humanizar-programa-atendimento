@@ -19,7 +19,7 @@ import com.humanizar.programaatendimento.application.usecase.programa.BuildProgr
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveProgramaTreeUseCase;
@@ -45,7 +45,7 @@ public class ProgramaUpdateService {
     private final BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase;
     private final BuildProgramaCommandsUseCase buildProgramaCommandsUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
-    private final BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
+    private final BuildProgramaTemplateUseCase buildProgramaTemplateUsecase;
     private final UpdateOutboxCommandUseCase updateOutboxCommandUseCase;
 
     public ProgramaUpdateService(
@@ -60,7 +60,7 @@ public class ProgramaUpdateService {
             BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase,
             BuildProgramaCommandsUseCase buildProgramaCommandsUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
-            BuildProgramaTemplateUsecase buildProgramaTemplateUsecase,
+            BuildProgramaTemplateUseCase buildProgramaTemplateUsecase,
             UpdateOutboxCommandUseCase updateOutboxCommandUseCase) {
         this.inboundContextMapper = inboundContextMapper;
         this.inboundProgramaAtendimentoMapper = inboundProgramaAtendimentoMapper;

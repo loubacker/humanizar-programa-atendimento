@@ -10,47 +10,48 @@ import com.humanizar.programaatendimento.domain.model.programa.ProgramaEscola;
 import com.humanizar.programaatendimento.domain.model.programa.ProgramaSemana;
 import com.humanizar.programaatendimento.domain.port.programa.AtEscolaSemanaPort;
 import com.humanizar.programaatendimento.domain.port.programa.AtEscolaSemanaSchedulePort;
-import com.humanizar.programaatendimento.domain.port.programa.ProgramaAtEscolaPort;
-import com.humanizar.programaatendimento.domain.port.programa.ProgramaAtSemanaPort;
+import com.humanizar.programaatendimento.domain.port.programa.ProgramaEscolaPort;
+import com.humanizar.programaatendimento.domain.port.programa.ProgramaSemanaPort;
 import com.humanizar.programaatendimento.domain.port.programa.ProgramaSemanaSchedulePort;
 
 @Service
 public class DeleteProgramaTreeUseCase {
 
-    private final ProgramaAtSemanaPort programaAtSemanaPort;
+    private final ProgramaSemanaPort programaSemanaPort;
     private final ProgramaSemanaSchedulePort programaSemanaSchedulePort;
-    private final ProgramaAtEscolaPort programaAtEscolaPort;
+    private final ProgramaEscolaPort programaEscolaPort;
     private final AtEscolaSemanaPort atEscolaSemanaPort;
     private final AtEscolaSemanaSchedulePort atEscolaSemanaSchedulePort;
 
     public DeleteProgramaTreeUseCase(
-            ProgramaAtSemanaPort programaAtSemanaPort,
+            ProgramaSemanaPort programaSemanaPort,
             ProgramaSemanaSchedulePort programaSemanaSchedulePort,
-            ProgramaAtEscolaPort programaAtEscolaPort,
+            ProgramaEscolaPort programaEscolaPort,
             AtEscolaSemanaPort atEscolaSemanaPort,
             AtEscolaSemanaSchedulePort atEscolaSemanaSchedulePort) {
-        this.programaAtSemanaPort = programaAtSemanaPort;
+        this.programaSemanaPort = programaSemanaPort;
         this.programaSemanaSchedulePort = programaSemanaSchedulePort;
-        this.programaAtEscolaPort = programaAtEscolaPort;
+        this.programaEscolaPort = programaEscolaPort;
         this.atEscolaSemanaPort = atEscolaSemanaPort;
         this.atEscolaSemanaSchedulePort = atEscolaSemanaSchedulePort;
     }
 
     public void execute(UUID programaId) {
-        List<ProgramaSemana> semanas = programaAtSemanaPort.findByProgramaAtendimentoId(programaId);
+        List<ProgramaSemana> semanas = programaSemanaPort.findByProgramaAtendimentoId(programaId);
         for (ProgramaSemana s : semanas) {
             programaSemanaSchedulePort.deleteByProgramaSemanaId(s.getId());
         }
-        programaAtSemanaPort.deleteByProgramaAtendimentoId(programaId);
+        programaSemanaPort.deleteByProgramaAtendimentoId(programaId);
 
-        List<ProgramaEscola> escolas = programaAtEscolaPort.findByProgramaAtendimentoId(programaId);
+        List<ProgramaEscola> escolas = programaEscolaPort.findByProgramaAtendimentoId(programaId);
         for (ProgramaEscola e : escolas) {
-            List<AtEscolaSemana> atSemanas = atEscolaSemanaPort.findByProgramaAtEscolaId(e.getId());
+            List<AtEscolaSemana> atSemanas = atEscolaSemanaPort.findByProgramaEscolaId(e.getId());
             for (AtEscolaSemana as : atSemanas) {
                 atEscolaSemanaSchedulePort.deleteByAtEscolaSemanaId(as.getId());
             }
-            atEscolaSemanaPort.deleteByProgramaAtEscolaId(e.getId());
+            atEscolaSemanaPort.deleteByProgramaEscolaId(e.getId());
         }
-        programaAtEscolaPort.deleteByProgramaAtendimentoId(programaId);
+        programaEscolaPort.deleteByProgramaAtendimentoId(programaId);
     }
 }
+

@@ -16,7 +16,7 @@ import com.humanizar.programaatendimento.application.outbound.dto.ProgramaComman
 import com.humanizar.programaatendimento.application.usecase.outbox.CreateOutboxCommandUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaAtendimentoUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveProgramaTreeUseCase;
@@ -42,7 +42,7 @@ public class ProgramaCreateService {
     private final BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase;
     private final BuildProgramaCommandsUseCase buildProgramaCommandsUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
-    private final BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
+    private final BuildProgramaTemplateUseCase buildProgramaTemplateUsecase;
     private final CreateOutboxCommandUseCase createOutboxCommandUseCase;
 
     public ProgramaCreateService(
@@ -56,7 +56,7 @@ public class ProgramaCreateService {
             BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase,
             BuildProgramaCommandsUseCase buildProgramaCommandsUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
-            BuildProgramaTemplateUsecase buildProgramaTemplateUsecase,
+            BuildProgramaTemplateUseCase buildProgramaTemplateUsecase,
             CreateOutboxCommandUseCase createOutboxCommandUseCase) {
         this.inboundContextMapper = inboundContextMapper;
         this.inboundProgramaAtendimentoMapper = inboundProgramaAtendimentoMapper;

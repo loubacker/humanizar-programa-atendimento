@@ -5,11 +5,11 @@ import java.util.UUID;
 
 import com.humanizar.programaatendimento.domain.model.programa.ProgramaEscola;
 
-public interface ProgramaAtEscolaPort {
+public interface ProgramaEscolaPort {
 
-    ProgramaEscola save(ProgramaEscola programaAtEscola);
+    ProgramaEscola save(ProgramaEscola programaEscola);
 
-    List<ProgramaEscola> saveAll(List<ProgramaEscola> programasAtEscola);
+    List<ProgramaEscola> saveAll(List<ProgramaEscola> programasEscola);
 
     List<ProgramaEscola> findByProgramaAtendimentoId(UUID programaAtendimentoId);
 

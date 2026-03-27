@@ -6,12 +6,12 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.ProgramaAtSemanaEntity;
+import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.ProgramaSemanaEntity;
 
 @Repository
-public interface ProgramaAtSemanaRepository extends JpaRepository<ProgramaAtSemanaEntity, UUID> {
+public interface ProgramaSemanaRepository extends JpaRepository<ProgramaSemanaEntity, UUID> {
 
-    List<ProgramaAtSemanaEntity> findByProgramaAtendimentoId(UUID programaAtendimentoId);
+    List<ProgramaSemanaEntity> findByProgramaAtendimentoId(UUID programaAtendimentoId);
 
     void deleteByProgramaAtendimentoId(UUID programaAtendimentoId);
 }

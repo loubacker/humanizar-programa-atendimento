@@ -6,7 +6,7 @@ import java.util.UUID;
 public class ProgramaSemanaSchedule {
 
     private UUID id;
-    private UUID programaAtSemanaId;
+    private UUID programaSemanaId;
     private UUID nucleoId;
     private String horarioInicio;
     private String horarioTermino;
@@ -16,10 +16,10 @@ public class ProgramaSemanaSchedule {
     public ProgramaSemanaSchedule() {
     }
 
-    public ProgramaSemanaSchedule(UUID id, UUID programaAtSemanaId, UUID nucleoId, String horarioInicio,
-            String horarioTermino, String turno) {
+    public ProgramaSemanaSchedule(UUID id, UUID programaSemanaId, UUID nucleoId, String horarioInicio,
+                                  String horarioTermino, String turno) {
         this.id = id;
-        this.programaAtSemanaId = programaAtSemanaId;
+        this.programaSemanaId = programaSemanaId;
         this.nucleoId = nucleoId;
         this.horarioInicio = horarioInicio;
         this.horarioTermino = horarioTermino;
@@ -35,12 +35,12 @@ public class ProgramaSemanaSchedule {
         this.id = id;
     }
 
-    public UUID getProgramaAtSemanaId() {
-        return programaAtSemanaId;
+    public UUID getProgramaSemanaId() {
+        return programaSemanaId;
     }
 
-    public void setProgramaAtSemanaId(UUID programaAtSemanaId) {
-        this.programaAtSemanaId = programaAtSemanaId;
+    public void setProgramaSemanaId(UUID programaSemanaId) {
+        this.programaSemanaId = programaSemanaId;
     }
 
     public UUID getNucleoId() {
@@ -75,14 +75,14 @@ public class ProgramaSemanaSchedule {
         this.turno = turno;
     }
 
-    // Builder Estático
+    // Builder estatico
     public static Builder builder() {
         return new Builder();
     }
 
     public static class Builder {
         private UUID id;
-        private UUID programaAtSemanaId;
+        private UUID programaSemanaId;
         private UUID nucleoId;
         private String horarioInicio;
         private String horarioTermino;
@@ -93,8 +93,8 @@ public class ProgramaSemanaSchedule {
             return this;
         }
 
-        public Builder programaAtSemanaId(UUID programaAtSemanaId) {
-            this.programaAtSemanaId = programaAtSemanaId;
+        public Builder programaSemanaId(UUID programaSemanaId) {
+            this.programaSemanaId = programaSemanaId;
             return this;
         }
 
@@ -119,7 +119,7 @@ public class ProgramaSemanaSchedule {
         }
 
         public ProgramaSemanaSchedule build() {
-            return new ProgramaSemanaSchedule(id, programaAtSemanaId, nucleoId, horarioInicio, horarioTermino,
+            return new ProgramaSemanaSchedule(id, programaSemanaId, nucleoId, horarioInicio, horarioTermino,
                     turno);
         }
     }
@@ -133,7 +133,7 @@ public class ProgramaSemanaSchedule {
             return false;
         ProgramaSemanaSchedule that = (ProgramaSemanaSchedule) o;
         return Objects.equals(id, that.id)
-                && Objects.equals(programaAtSemanaId, that.programaAtSemanaId)
+                && Objects.equals(programaSemanaId, that.programaSemanaId)
                 && Objects.equals(nucleoId, that.nucleoId)
                 && Objects.equals(horarioInicio, that.horarioInicio)
                 && Objects.equals(horarioTermino, that.horarioTermino)
@@ -142,14 +142,14 @@ public class ProgramaSemanaSchedule {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, programaAtSemanaId, nucleoId, horarioInicio, horarioTermino, turno);
+        return Objects.hash(id, programaSemanaId, nucleoId, horarioInicio, horarioTermino, turno);
     }
 
     @Override
     public String toString() {
         return "ProgramaSemanaSchedule{" +
                 "id=" + id +
-                ", programaAtSemanaId=" + programaAtSemanaId +
+                ", programaSemanaId=" + programaSemanaId +
                 ", nucleoId=" + nucleoId +
                 ", horarioInicio='" + horarioInicio + '\'' +
                 ", horarioTermino='" + horarioTermino + '\'' +
@@ -157,3 +157,4 @@ public class ProgramaSemanaSchedule {
                 '}';
     }
 }
+

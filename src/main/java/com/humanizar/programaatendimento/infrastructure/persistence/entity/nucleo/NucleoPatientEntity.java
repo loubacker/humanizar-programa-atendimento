@@ -11,7 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "nucleo_patient", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_nucleo_patient_nucleo", columnNames = { "patient_id", "nucleo_id" })
+        @UniqueConstraint(name = "uk_patient_nucleo", columnNames = { "patient_id", "nucleo_id" })
 })
 public class NucleoPatientEntity {
 

@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 import com.humanizar.programaatendimento.domain.exception.ProgramaAtendimentoException;
 
 @Component
-public class BuildProgramaTemplateUsecase {
+public class BuildProgramaTemplateUseCase {
 
     private final SavePendingProgramaUseCase savePendingUseCase;
     private final ResolveServiceExceptionUseCase resolveExceptionUseCase;
 
-    public BuildProgramaTemplateUsecase(
+    public BuildProgramaTemplateUseCase(
             SavePendingProgramaUseCase savePendingUseCase,
             ResolveServiceExceptionUseCase resolveExceptionUseCase) {
         this.savePendingUseCase = savePendingUseCase;

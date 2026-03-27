@@ -11,7 +11,8 @@ import com.humanizar.programaatendimento.infrastructure.persistence.entity.progr
 @Repository
 public interface AtEscolaSemanaRepository extends JpaRepository<AtEscolaSemanaEntity, UUID> {
 
-    List<AtEscolaSemanaEntity> findByProgramaAtEscolaId(UUID programaAtEscolaId);
+    List<AtEscolaSemanaEntity> findByProgramaEscolaId(UUID programaEscolaId);
 
-    void deleteByProgramaAtEscolaId(UUID programaAtEscolaId);
+    void deleteByProgramaEscolaId(UUID programaEscolaId);
 }
+

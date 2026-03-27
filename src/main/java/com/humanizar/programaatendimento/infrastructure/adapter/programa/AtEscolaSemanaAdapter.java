@@ -42,27 +42,27 @@ public class AtEscolaSemanaAdapter implements AtEscolaSemanaPort {
     }
 
     @Override
-    public List<AtEscolaSemana> findByProgramaAtEscolaId(UUID programaAtEscolaId) {
-        return atEscolaSemanaRepository.findByProgramaAtEscolaId(programaAtEscolaId).stream()
+    public List<AtEscolaSemana> findByProgramaEscolaId(UUID programaEscolaId) {
+        return atEscolaSemanaRepository.findByProgramaEscolaId(programaEscolaId).stream()
                 .map(this::toDomain)
                 .toList();
     }
 
     @Override
-    public void deleteByProgramaAtEscolaId(UUID programaAtEscolaId) {
+    public void deleteByProgramaEscolaId(UUID programaEscolaId) {
         List<AtEscolaSemanaEntity> semanaEntities = atEscolaSemanaRepository
-                .findByProgramaAtEscolaId(programaAtEscolaId);
+                .findByProgramaEscolaId(programaEscolaId);
         for (AtEscolaSemanaEntity semanaEntity : semanaEntities) {
             atEscolaSemanaSchedulePort.deleteByAtEscolaSemanaId(semanaEntity.getId());
         }
-        atEscolaSemanaRepository.deleteByProgramaAtEscolaId(programaAtEscolaId);
+        atEscolaSemanaRepository.deleteByProgramaEscolaId(programaEscolaId);
     }
 
     private AtEscolaSemana toDomain(AtEscolaSemanaEntity entity) {
         List<AtEscolaSemanaSchedule> schedules = atEscolaSemanaSchedulePort.findByAtEscolaSemanaId(entity.getId());
         return new AtEscolaSemana(
                 entity.getId(),
-                entity.getProgramaAtEscolaId(),
+                entity.getProgramaEscolaId(),
                 entity.getDiaSemana(),
                 schedules);
     }
@@ -70,9 +70,9 @@ public class AtEscolaSemanaAdapter implements AtEscolaSemanaPort {
     private AtEscolaSemanaEntity toEntity(AtEscolaSemana domain) {
         AtEscolaSemanaEntity entity = new AtEscolaSemanaEntity();
         entity.setId(domain.getId());
-        entity.setProgramaAtEscolaId(Objects.requireNonNull(
-                domain.getProgramaAtEscolaId(),
-                "programaAtEscolaId e obrigatorio para persistir at escola semana"));
+        entity.setProgramaEscolaId(Objects.requireNonNull(
+                domain.getProgramaEscolaId(),
+                "programaEscolaId e obrigatorio para persistir at escola semana"));
         entity.setDiaSemana(domain.getDiaSemana());
         return entity;
     }
@@ -98,3 +98,4 @@ public class AtEscolaSemanaAdapter implements AtEscolaSemanaPort {
         atEscolaSemanaSchedulePort.saveAll(normalized);
     }
 }
+

@@ -14,7 +14,7 @@ import com.humanizar.programaatendimento.application.usecase.outbox.DeleteOutbox
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaSnapshotUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.domain.exception.ProgramaAtendimentoException;
 import com.humanizar.programaatendimento.domain.model.pending.PendingProgramaAtendimento;
@@ -34,7 +34,7 @@ public class ProgramaDeleteService {
     private final DeleteAbordagensUseCase deleteAbordagensUseCase;
     private final BuildProgramaSnapshotUseCase buildProgramaSnapshotUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
-    private final BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
+    private final BuildProgramaTemplateUseCase buildProgramaTemplateUsecase;
     private final DeleteOutboxCommandUseCase deleteOutboxCommandUseCase;
 
     public ProgramaDeleteService(
@@ -45,7 +45,7 @@ public class ProgramaDeleteService {
             DeleteAbordagensUseCase deleteAbordagensUseCase,
             BuildProgramaSnapshotUseCase buildProgramaSnapshotUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
-            BuildProgramaTemplateUsecase buildProgramaTemplateUsecase,
+            BuildProgramaTemplateUseCase buildProgramaTemplateUsecase,
             DeleteOutboxCommandUseCase deleteOutboxCommandUseCase) {
         this.inboundDeleteContextMapper = inboundDeleteContextMapper;
         this.programaAtendimentoPort = programaAtendimentoPort;

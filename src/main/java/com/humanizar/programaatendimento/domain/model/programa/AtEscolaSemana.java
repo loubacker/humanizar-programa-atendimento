@@ -10,17 +10,17 @@ import com.humanizar.programaatendimento.domain.model.enums.Semana;
 public class AtEscolaSemana {
 
     private UUID id;
-    private UUID programaAtEscolaId;
+    private UUID programaEscolaId;
     private Semana diaSemana;
     private List<AtEscolaSemanaSchedule> atEscolaSemanaSchedule = new ArrayList<>();
 
     public AtEscolaSemana() {
     }
 
-    public AtEscolaSemana(UUID id, UUID programaAtEscolaId, Semana diaSemana,
-            List<AtEscolaSemanaSchedule> atEscolaSemanaSchedule) {
+    public AtEscolaSemana(UUID id, UUID programaEscolaId, Semana diaSemana,
+                          List<AtEscolaSemanaSchedule> atEscolaSemanaSchedule) {
         this.id = id;
-        this.programaAtEscolaId = programaAtEscolaId;
+        this.programaEscolaId = programaEscolaId;
         this.diaSemana = diaSemana;
         this.atEscolaSemanaSchedule = atEscolaSemanaSchedule != null ? atEscolaSemanaSchedule : new ArrayList<>();
     }
@@ -33,12 +33,12 @@ public class AtEscolaSemana {
         this.id = id;
     }
 
-    public UUID getProgramaAtEscolaId() {
-        return programaAtEscolaId;
+    public UUID getProgramaEscolaId() {
+        return programaEscolaId;
     }
 
-    public void setProgramaAtEscolaId(UUID programaAtEscolaId) {
-        this.programaAtEscolaId = programaAtEscolaId;
+    public void setProgramaEscolaId(UUID programaEscolaId) {
+        this.programaEscolaId = programaEscolaId;
     }
 
     public Semana getDiaSemana() {
@@ -63,7 +63,7 @@ public class AtEscolaSemana {
 
     public static class Builder {
         private UUID id;
-        private UUID programaAtEscolaId;
+        private UUID programaEscolaId;
         private Semana diaSemana;
         private List<AtEscolaSemanaSchedule> atEscolaSemanaSchedule = new ArrayList<>();
 
@@ -72,8 +72,8 @@ public class AtEscolaSemana {
             return this;
         }
 
-        public Builder programaAtEscolaId(UUID programaAtEscolaId) {
-            this.programaAtEscolaId = programaAtEscolaId;
+        public Builder programaEscolaId(UUID programaEscolaId) {
+            this.programaEscolaId = programaEscolaId;
             return this;
         }
 
@@ -88,7 +88,7 @@ public class AtEscolaSemana {
         }
 
         public AtEscolaSemana build() {
-            return new AtEscolaSemana(id, programaAtEscolaId, diaSemana, atEscolaSemanaSchedule);
+            return new AtEscolaSemana(id, programaEscolaId, diaSemana, atEscolaSemanaSchedule);
         }
     }
 
@@ -99,13 +99,14 @@ public class AtEscolaSemana {
         if (!(o instanceof AtEscolaSemana that))
             return false;
         return Objects.equals(id, that.id)
-                && Objects.equals(programaAtEscolaId, that.programaAtEscolaId)
+                && Objects.equals(programaEscolaId, that.programaEscolaId)
                 && diaSemana == that.diaSemana
                 && Objects.equals(atEscolaSemanaSchedule, that.atEscolaSemanaSchedule);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, programaAtEscolaId, diaSemana, atEscolaSemanaSchedule);
+        return Objects.hash(id, programaEscolaId, diaSemana, atEscolaSemanaSchedule);
     }
 }
+

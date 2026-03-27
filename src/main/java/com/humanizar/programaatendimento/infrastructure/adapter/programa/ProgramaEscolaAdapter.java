@@ -4,52 +4,52 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.ProgramaEscolaEntity;
 import org.springframework.stereotype.Component;
 
 import com.humanizar.programaatendimento.domain.model.programa.ProgramaEscola;
-import com.humanizar.programaatendimento.domain.port.programa.ProgramaAtEscolaPort;
-import com.humanizar.programaatendimento.infrastructure.persistence.entity.programa.ProgramaAtEscolaEntity;
-import com.humanizar.programaatendimento.infrastructure.persistence.repository.programa.ProgramaAtEscolaRepository;
+import com.humanizar.programaatendimento.domain.port.programa.ProgramaEscolaPort;
+import com.humanizar.programaatendimento.infrastructure.persistence.repository.programa.ProgramaEscolaRepository;
 
 @Component
-public class ProgramaAtEscolaAdapter implements ProgramaAtEscolaPort {
+public class ProgramaEscolaAdapter implements ProgramaEscolaPort {
 
-    private final ProgramaAtEscolaRepository programaAtEscolaRepository;
+    private final ProgramaEscolaRepository programaEscolaRepository;
 
-    public ProgramaAtEscolaAdapter(ProgramaAtEscolaRepository programaAtEscolaRepository) {
-        this.programaAtEscolaRepository = programaAtEscolaRepository;
+    public ProgramaEscolaAdapter(ProgramaEscolaRepository programaEscolaRepository) {
+        this.programaEscolaRepository = programaEscolaRepository;
     }
 
     @Override
-    public ProgramaEscola save(ProgramaEscola programaAtEscola) {
-        ProgramaAtEscolaEntity entity = toEntity(programaAtEscola);
-        ProgramaAtEscolaEntity saved = programaAtEscolaRepository.save(entity);
+    public ProgramaEscola save(ProgramaEscola programaEscola) {
+        ProgramaEscolaEntity entity = toEntity(programaEscola);
+        ProgramaEscolaEntity saved = programaEscolaRepository.save(entity);
         return toDomain(Objects.requireNonNull(saved, "Erro ao salvar programa at escola"));
     }
 
     @Override
-    public List<ProgramaEscola> saveAll(List<ProgramaEscola> programasAtEscola) {
-        List<ProgramaAtEscolaEntity> entities = programasAtEscola.stream()
+    public List<ProgramaEscola> saveAll(List<ProgramaEscola> programasEscola) {
+        List<ProgramaEscolaEntity> entities = programasEscola.stream()
                 .map(this::toEntity)
                 .toList();
-        return programaAtEscolaRepository.saveAll(entities).stream()
+        return programaEscolaRepository.saveAll(entities).stream()
                 .map(this::toDomain)
                 .toList();
     }
 
     @Override
     public List<ProgramaEscola> findByProgramaAtendimentoId(UUID programaAtendimentoId) {
-        return programaAtEscolaRepository.findByProgramaAtendimentoId(programaAtendimentoId).stream()
+        return programaEscolaRepository.findByProgramaAtendimentoId(programaAtendimentoId).stream()
                 .map(this::toDomain)
                 .toList();
     }
 
     @Override
     public void deleteByProgramaAtendimentoId(UUID programaAtendimentoId) {
-        programaAtEscolaRepository.deleteByProgramaAtendimentoId(programaAtendimentoId);
+        programaEscolaRepository.deleteByProgramaAtendimentoId(programaAtendimentoId);
     }
 
-    private ProgramaEscola toDomain(ProgramaAtEscolaEntity entity) {
+    private ProgramaEscola toDomain(ProgramaEscolaEntity entity) {
         return new ProgramaEscola(
                 entity.getId(),
                 entity.getProgramaAtendimentoId(),
@@ -58,8 +58,8 @@ public class ProgramaAtEscolaAdapter implements ProgramaAtEscolaPort {
                 null);
     }
 
-    private ProgramaAtEscolaEntity toEntity(ProgramaEscola domain) {
-        ProgramaAtEscolaEntity entity = new ProgramaAtEscolaEntity();
+    private ProgramaEscolaEntity toEntity(ProgramaEscola domain) {
+        ProgramaEscolaEntity entity = new ProgramaEscolaEntity();
         entity.setId(domain.getId());
         entity.setProgramaAtendimentoId(Objects.requireNonNull(
                 domain.getProgramaAtendimentoId(),

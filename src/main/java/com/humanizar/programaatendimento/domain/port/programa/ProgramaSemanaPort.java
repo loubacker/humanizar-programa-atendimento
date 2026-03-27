@@ -5,11 +5,11 @@ import java.util.UUID;
 
 import com.humanizar.programaatendimento.domain.model.programa.ProgramaSemana;
 
-public interface ProgramaAtSemanaPort {
+public interface ProgramaSemanaPort {
 
-    ProgramaSemana save(ProgramaSemana programaAtSemana);
+    ProgramaSemana save(ProgramaSemana programaSemana);
 
-    List<ProgramaSemana> saveAll(List<ProgramaSemana> programasAtSemana);
+    List<ProgramaSemana> saveAll(List<ProgramaSemana> programasSemana);
 
     List<ProgramaSemana> findByProgramaAtendimentoId(UUID programaAtendimentoId);
 

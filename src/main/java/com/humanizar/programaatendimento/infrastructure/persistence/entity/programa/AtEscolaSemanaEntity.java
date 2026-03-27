@@ -13,9 +13,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "at_escola_semana")
+@Table(name = "at_escola_semana", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_at_escola_semana_dia",
+                columnNames = {"programa_escola_id", "dia_semana"})
+})
 public class AtEscolaSemanaEntity {
 
     @Id
@@ -23,8 +27,8 @@ public class AtEscolaSemanaEntity {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "programa_at_escola_id", nullable = false)
-    private UUID programaAtEscolaId;
+    @Column(name = "programa_escola_id", nullable = false)
+    private UUID programaEscolaId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "dia_semana")
@@ -34,9 +38,9 @@ public class AtEscolaSemanaEntity {
     public AtEscolaSemanaEntity() {
     }
 
-    public AtEscolaSemanaEntity(UUID id, UUID programaAtEscolaId, Semana diaSemana) {
+    public AtEscolaSemanaEntity(UUID id, UUID programaEscolaId, Semana diaSemana) {
         this.id = id;
-        this.programaAtEscolaId = programaAtEscolaId;
+        this.programaEscolaId = programaEscolaId;
         this.diaSemana = diaSemana;
     }
 
@@ -49,12 +53,12 @@ public class AtEscolaSemanaEntity {
         this.id = id;
     }
 
-    public UUID getProgramaAtEscolaId() {
-        return programaAtEscolaId;
+    public UUID getProgramaEscolaId() {
+        return programaEscolaId;
     }
 
-    public void setProgramaAtEscolaId(UUID programaAtEscolaId) {
-        this.programaAtEscolaId = programaAtEscolaId;
+    public void setProgramaEscolaId(UUID programaEscolaId) {
+        this.programaEscolaId = programaEscolaId;
     }
 
     public Semana getDiaSemana() {
@@ -74,21 +78,22 @@ public class AtEscolaSemanaEntity {
             return false;
         AtEscolaSemanaEntity that = (AtEscolaSemanaEntity) o;
         return Objects.equals(id, that.id)
-                && Objects.equals(programaAtEscolaId, that.programaAtEscolaId)
+                && Objects.equals(programaEscolaId, that.programaEscolaId)
                 && diaSemana == that.diaSemana;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, programaAtEscolaId, diaSemana);
+        return Objects.hash(id, programaEscolaId, diaSemana);
     }
 
     @Override
     public String toString() {
         return "AtEscolaSemanaEntity{" +
                 "id=" + id +
-                ", programaAtEscolaId=" + programaAtEscolaId +
+                ", programaEscolaId=" + programaEscolaId +
                 ", diaSemana=" + diaSemana +
                 '}';
     }
 }
+

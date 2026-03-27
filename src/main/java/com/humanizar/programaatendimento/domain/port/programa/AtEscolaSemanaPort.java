@@ -11,7 +11,8 @@ public interface AtEscolaSemanaPort {
 
     List<AtEscolaSemana> saveAll(List<AtEscolaSemana> atEscolaSemana);
 
-    List<AtEscolaSemana> findByProgramaAtEscolaId(UUID programaAtEscolaId);
+    List<AtEscolaSemana> findByProgramaEscolaId(UUID programaEscolaId);
 
-    void deleteByProgramaAtEscolaId(UUID programaAtEscolaId);
+    void deleteByProgramaEscolaId(UUID programaEscolaId);
 }
+

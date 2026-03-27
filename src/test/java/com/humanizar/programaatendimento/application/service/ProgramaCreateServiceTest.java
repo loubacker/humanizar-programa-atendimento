@@ -37,7 +37,7 @@ import com.humanizar.programaatendimento.application.outbound.dto.ProgramaComman
 import com.humanizar.programaatendimento.application.usecase.outbox.CreateOutboxCommandUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaAtendimentoUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveProgramaTreeUseCase;
@@ -75,7 +75,7 @@ class ProgramaCreateServiceTest {
     @Mock
     private SavePendingProgramaUseCase savePendingProgramaUseCase;
     @Mock
-    private BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
+    private BuildProgramaTemplateUseCase buildProgramaTemplateUsecase;
     @Mock
     private CreateOutboxCommandUseCase createOutboxCommandUseCase;
 

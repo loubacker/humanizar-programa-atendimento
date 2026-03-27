@@ -62,7 +62,7 @@ public class ProgramaSemanaScheduleAdapter implements ProgramaSemanaSchedulePort
     private ProgramaSemanaScheduleEntity toEntity(ProgramaSemanaSchedule domain) {
         ProgramaSemanaScheduleEntity entity = new ProgramaSemanaScheduleEntity();
         entity.setId(domain.getId());
-        entity.setProgramaSemanaId(domain.getProgramaAtSemanaId());
+        entity.setProgramaSemanaId(domain.getProgramaSemanaId());
         entity.setNucleoId(domain.getNucleoId());
         entity.setHorarioInicio(domain.getHorarioInicio());
         entity.setHorarioTermino(domain.getHorarioTermino());
