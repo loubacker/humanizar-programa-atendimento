@@ -72,7 +72,8 @@ class ResolveServiceExceptionUseCaseTest {
 
     @Test
     void shouldKeepAbordagemDuplicatedForUkAbordagemNucleoPatient() {
-        Exception ex = duplicateException("duplicate key value violates unique constraint \"uk_abordagem_nucleo_patient\"");
+        Exception ex = duplicateException(
+                "duplicate key value violates unique constraint \"uk_abordagem_nucleo_patient\"");
 
         ProgramaAtendimentoException resolved = useCase.resolve(ex, "corr-5", true);
 

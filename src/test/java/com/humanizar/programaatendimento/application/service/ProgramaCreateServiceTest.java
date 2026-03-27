@@ -21,6 +21,7 @@ import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -113,11 +114,13 @@ class ProgramaCreateServiceTest {
         InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope = createEnvelope(correlationId, payload);
         InboundContextDTO<ProgramaAtendimentoDTO> context = new InboundContextDTO<>(envelope, payload);
         PendingProgramaAtendimento pending = PendingProgramaAtendimento.builder().eventId(pendingEventId).build();
-        List<ProgramaCommandDTO> commandPayload = List.of(new ProgramaCommandDTO(nucleoPatientId, List.of(UUID.randomUUID())));
+        List<ProgramaCommandDTO> commandPayload = List
+                .of(new ProgramaCommandDTO(nucleoPatientId, List.of(UUID.randomUUID())));
 
         when(inboundContextMapper.fromEnvelop(envelope)).thenReturn(context);
         when(inboundProgramaAtendimentoMapper.toCreatePayload(payload, correlationId.toString())).thenReturn(payload);
-        when(savePendingProgramaUseCase.serializePayload(payload, correlationId.toString())).thenReturn("{\"ok\":true}");
+        when(savePendingProgramaUseCase.serializePayload(payload, correlationId.toString()))
+                .thenReturn("{\"ok\":true}");
         when(savePendingProgramaUseCase.save(
                 correlationId, patientId, null, OperationType.CREATE, "{\"ok\":true}"))
                 .thenReturn(pending);
@@ -135,13 +138,13 @@ class ProgramaCreateServiceTest {
         when(buildProgramaCommandsUseCase.execute(payload.nucleoPatient())).thenReturn(commandPayload);
 
         doAnswer(inv -> {
-            Callable<?> businessLogic = inv.getArgument(3);
+            Callable<ProgramaAtendimentoCreateResponseDTO> businessLogic = inv.getArgument(3);
             return businessLogic.call();
         }).when(buildProgramaTemplateUsecase).executeWithPendingGuard(
                 eq(pendingEventId),
                 eq(correlationId.toString()),
                 eq(true),
-                any(Callable.class));
+                ArgumentMatchers.<Callable<ProgramaAtendimentoCreateResponseDTO>>any());
 
         ProgramaAtendimentoCreateResponseDTO response = service.register(envelope);
 
@@ -151,10 +154,15 @@ class ProgramaCreateServiceTest {
         verify(savePendingProgramaUseCase).save(
                 correlationId, patientId, null, OperationType.CREATE, "{\"ok\":true}");
         verify(buildProgramaTemplateUsecase).executeWithPendingGuard(
-                eq(pendingEventId), eq(correlationId.toString()), eq(true), any(Callable.class));
+                eq(pendingEventId),
+                eq(correlationId.toString()),
+                eq(true),
+                ArgumentMatchers.<Callable<ProgramaAtendimentoCreateResponseDTO>>any());
         verify(programaAtendimentoPort).save(any(ProgramaAtendimento.class));
-        verify(saveProgramaTreeUseCase).saveProgramasSemana(any(UUID.class), eq(payload.programasSemana()), eq(correlationId.toString()));
-        verify(saveProgramaTreeUseCase).saveProgramasEscola(any(UUID.class), eq(payload.programasEscola()), eq(correlationId.toString()));
+        verify(saveProgramaTreeUseCase).saveProgramasSemana(any(UUID.class), eq(payload.programasSemana()),
+                eq(correlationId.toString()));
+        verify(saveProgramaTreeUseCase).saveProgramasEscola(any(UUID.class), eq(payload.programasEscola()),
+                eq(correlationId.toString()));
         verify(acolhimentoInboundService).createNucleoPatient(
                 eq(nucleoPatientId),
                 eq(patientId),
@@ -184,14 +192,17 @@ class ProgramaCreateServiceTest {
 
         when(inboundContextMapper.fromEnvelop(envelope)).thenReturn(context);
         when(inboundProgramaAtendimentoMapper.toCreatePayload(payload, correlationId.toString())).thenReturn(payload);
-        when(savePendingProgramaUseCase.serializePayload(payload, correlationId.toString())).thenReturn("{\"ok\":true}");
+        when(savePendingProgramaUseCase.serializePayload(payload, correlationId.toString()))
+                .thenReturn("{\"ok\":true}");
         when(savePendingProgramaUseCase.save(
                 correlationId, patientId, null, OperationType.CREATE, "{\"ok\":true}"))
                 .thenReturn(pending);
         when(programaAtendimentoPort.findByPatientId(patientId))
-                .thenReturn(Optional.of(ProgramaAtendimento.builder().id(UUID.randomUUID()).patientId(patientId).build()));
+                .thenReturn(
+                        Optional.of(ProgramaAtendimento.builder().id(UUID.randomUUID()).patientId(patientId).build()));
 
-        ProgramaAtendimentoException ex = assertThrows(ProgramaAtendimentoException.class, () -> service.register(envelope));
+        ProgramaAtendimentoException ex = assertThrows(ProgramaAtendimentoException.class,
+                () -> service.register(envelope));
 
         assertEquals(ReasonCode.DUPLICATE_PATIENT, ex.getReasonCode());
         verify(savePendingProgramaUseCase).markAsError(pendingEventId);
@@ -199,7 +210,8 @@ class ProgramaCreateServiceTest {
         verify(createOutboxCommandUseCase, never()).execute(any(), any(), any(), any());
     }
 
-    private InboundEnvelopeDTO<ProgramaAtendimentoDTO> createEnvelope(UUID correlationId, ProgramaAtendimentoDTO payload) {
+    private InboundEnvelopeDTO<ProgramaAtendimentoDTO> createEnvelope(UUID correlationId,
+            ProgramaAtendimentoDTO payload) {
         return new InboundEnvelopeDTO<>(
                 correlationId,
                 "humanizar-acolhimento",

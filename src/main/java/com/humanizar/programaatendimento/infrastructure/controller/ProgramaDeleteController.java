@@ -37,7 +37,8 @@ public class ProgramaDeleteController {
                 ? envelop.payload().patientId().toString()
                 : null;
 
-        log.info("Recebido DELETE /api/v1/programa-atendimento/delete/{}. correlationId={}, payloadPatientId={}, operacao=DELETE",
+        log.info(
+                "Recebido DELETE /api/v1/programa-atendimento/delete/{}. correlationId={}, payloadPatientId={}, operacao=DELETE",
                 patientId, correlationId, payloadPatientId);
         ProgramaAtendimentoDeleteResponseDTO response = programaDeleteService.deleteByPatientId(
                 patientId, envelop);

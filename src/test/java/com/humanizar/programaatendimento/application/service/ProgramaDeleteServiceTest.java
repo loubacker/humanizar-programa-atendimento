@@ -18,6 +18,7 @@ import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -108,19 +109,20 @@ class ProgramaDeleteServiceTest {
         when(inboundDeleteContextMapper.fromDelete(pathPatientId, envelope)).thenReturn(context);
         when(programaAtendimentoPort.findByPatientId(patientId)).thenReturn(Optional.of(existing));
         when(buildProgramaSnapshotUseCase.buildSnapshot(existing, patientId)).thenReturn(snapshot);
-        when(savePendingProgramaUseCase.serializePayload(snapshot, correlationId.toString())).thenReturn("{\"snapshot\":true}");
+        when(savePendingProgramaUseCase.serializePayload(snapshot, correlationId.toString()))
+                .thenReturn("{\"snapshot\":true}");
         when(savePendingProgramaUseCase.save(
                 correlationId, patientId, programaId, OperationType.DELETE, "{\"snapshot\":true}"))
                 .thenReturn(pending);
 
         doAnswer(inv -> {
-            Callable<?> businessLogic = inv.getArgument(3);
+            Callable<ProgramaAtendimentoDeleteResponseDTO> businessLogic = inv.getArgument(3);
             return businessLogic.call();
         }).when(buildProgramaTemplateUsecase).executeWithPendingGuard(
                 eq(pendingEventId),
                 eq(correlationId.toString()),
                 eq(false),
-                any(Callable.class));
+                ArgumentMatchers.<Callable<ProgramaAtendimentoDeleteResponseDTO>>any());
 
         ProgramaAtendimentoDeleteResponseDTO response = service.deleteByPatientId(pathPatientId, envelope);
 

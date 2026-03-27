@@ -98,4 +98,3 @@ public class AtEscolaSemanaAdapter implements AtEscolaSemanaPort {
         atEscolaSemanaSchedulePort.saveAll(normalized);
     }
 }
-

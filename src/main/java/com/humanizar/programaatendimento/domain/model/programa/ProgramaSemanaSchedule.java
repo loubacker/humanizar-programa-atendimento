@@ -17,7 +17,7 @@ public class ProgramaSemanaSchedule {
     }
 
     public ProgramaSemanaSchedule(UUID id, UUID programaSemanaId, UUID nucleoId, String horarioInicio,
-                                  String horarioTermino, String turno) {
+            String horarioTermino, String turno) {
         this.id = id;
         this.programaSemanaId = programaSemanaId;
         this.nucleoId = nucleoId;
@@ -157,4 +157,3 @@ public class ProgramaSemanaSchedule {
                 '}';
     }
 }
-

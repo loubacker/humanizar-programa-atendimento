@@ -25,8 +25,7 @@ public class ResilientMethodsConfig {
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Documented
-    @Retryable(maxRetries = RETRIEVE_MAX_RETRIES, timeoutString = RETRIEVE_TIMEOUT,
-            predicate = RetrieveTransientRetryPredicate.class)
+    @Retryable(maxRetries = RETRIEVE_MAX_RETRIES, timeoutString = RETRIEVE_TIMEOUT, predicate = RetrieveTransientRetryPredicate.class)
     public @interface Retry {
     }
 

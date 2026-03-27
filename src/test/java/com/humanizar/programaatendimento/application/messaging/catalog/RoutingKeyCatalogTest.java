@@ -19,8 +19,10 @@ class RoutingKeyCatalogTest {
         assertEquals("cmd.programa.created.v1", RoutingKeyCatalog.PROGRAMA_CREATED_V1);
         assertEquals("cmd.programa.updated.v1", RoutingKeyCatalog.PROGRAMA_UPDATED_V1);
         assertEquals("cmd.programa.deleted.v1", RoutingKeyCatalog.PROGRAMA_DELETED_V1);
-        assertEquals("ev.programa.nucleo-relacionamento.processed.v1", RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_PROCESSED_V1);
-        assertEquals("ev.programa.nucleo-relacionamento.rejected.v1", RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_REJECTED_V1);
+        assertEquals("ev.programa.nucleo-relacionamento.processed.v1",
+                RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_PROCESSED_V1);
+        assertEquals("ev.programa.nucleo-relacionamento.rejected.v1",
+                RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_REJECTED_V1);
     }
 
     @Test
@@ -33,8 +35,10 @@ class RoutingKeyCatalogTest {
 
     @Test
     void shouldClassifyNucleoRelacionamentoCallbackRoutingKeys() {
-        assertTrue(RoutingKeyCatalog.isNucleoRelacionamentoCallback(RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_PROCESSED_V1));
-        assertTrue(RoutingKeyCatalog.isNucleoRelacionamentoCallback(RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_REJECTED_V1));
+        assertTrue(RoutingKeyCatalog
+                .isNucleoRelacionamentoCallback(RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_PROCESSED_V1));
+        assertTrue(RoutingKeyCatalog
+                .isNucleoRelacionamentoCallback(RoutingKeyCatalog.PROGRAMA_NUCLEO_RELACIONAMENTO_REJECTED_V1));
         assertFalse(RoutingKeyCatalog.isNucleoRelacionamentoCallback(RoutingKeyCatalog.ACOLHIMENTO_CREATED_V1));
     }
 }

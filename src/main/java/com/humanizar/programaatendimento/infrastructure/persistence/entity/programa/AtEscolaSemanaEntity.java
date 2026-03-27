@@ -17,8 +17,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "at_escola_semana", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_at_escola_semana_dia",
-                columnNames = {"programa_escola_id", "dia_semana"})
+        @UniqueConstraint(name = "uk_at_escola_semana_dia", columnNames = { "programa_escola_id", "dia_semana" })
 })
 public class AtEscolaSemanaEntity {
 
@@ -96,4 +95,3 @@ public class AtEscolaSemanaEntity {
                 '}';
     }
 }
-

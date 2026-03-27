@@ -102,8 +102,10 @@ public class ProgramaCreateService {
                             programaId, patientId, payload, correlationIdText);
                     programaAtendimentoPort.save(programa);
 
-                    saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(), correlationIdText);
-                    saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(), correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(),
+                            correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(),
+                            correlationIdText);
                     saveNucleoPatients(payload.nucleoPatient(), patientId, correlationId);
                     saveAbordagensUseCase.execute(payload.nucleoPatient());
 

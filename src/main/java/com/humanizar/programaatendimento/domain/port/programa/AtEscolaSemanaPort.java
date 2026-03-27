@@ -15,4 +15,3 @@ public interface AtEscolaSemanaPort {
 
     void deleteByProgramaEscolaId(UUID programaEscolaId);
 }
-

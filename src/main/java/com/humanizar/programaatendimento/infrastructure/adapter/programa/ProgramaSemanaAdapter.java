@@ -20,7 +20,7 @@ public class ProgramaSemanaAdapter implements ProgramaSemanaPort {
     private final ProgramaSemanaSchedulePort programaSemanaSchedulePort;
 
     public ProgramaSemanaAdapter(ProgramaSemanaRepository programaSemanaRepository,
-                                 ProgramaSemanaSchedulePort programaSemanaSchedulePort) {
+            ProgramaSemanaSchedulePort programaSemanaSchedulePort) {
         this.programaSemanaRepository = programaSemanaRepository;
         this.programaSemanaSchedulePort = programaSemanaSchedulePort;
     }
@@ -98,4 +98,3 @@ public class ProgramaSemanaAdapter implements ProgramaSemanaPort {
         programaSemanaSchedulePort.saveAll(normalized);
     }
 }
-

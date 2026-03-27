@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -84,7 +83,8 @@ class ProgramaCallbackServiceTest {
         String target = "humanizar-nucleo-relacionamento";
         CallbackDTO callback = callback("PROCESSED", UUID.randomUUID(), UUID.randomUUID());
 
-        doThrow(new ProgramaAtendimentoException(ReasonCode.DUPLICATE_EVENT, callback.correlationId().toString(), "duplicado"))
+        doThrow(new ProgramaAtendimentoException(ReasonCode.DUPLICATE_EVENT, callback.correlationId().toString(),
+                "duplicado"))
                 .when(checkDuplicateEventUseCase)
                 .execute(eq(consumer), eq(callback.eventId()), any());
 

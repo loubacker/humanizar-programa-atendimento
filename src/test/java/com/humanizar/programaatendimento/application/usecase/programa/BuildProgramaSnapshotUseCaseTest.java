@@ -86,10 +86,10 @@ class BuildProgramaSnapshotUseCaseTest {
         assertEquals(List.of("SEGUNDA", "TERCA"),
                 snapshot.programasSemana().stream().map(s -> s.diaSemana()).toList());
         assertEquals(List.of(
-                        "07:00|08:00|NOITE|00000000-0000-0000-0000-000000000120",
-                        "08:00|10:00|MANHA|00000000-0000-0000-0000-000000000110",
-                        "08:00|10:00|MANHA|00000000-0000-0000-0000-000000000130",
-                        "08:00|10:00|TARDE|00000000-0000-0000-0000-000000000125"),
+                "07:00|08:00|NOITE|00000000-0000-0000-0000-000000000120",
+                "08:00|10:00|MANHA|00000000-0000-0000-0000-000000000110",
+                "08:00|10:00|MANHA|00000000-0000-0000-0000-000000000130",
+                "08:00|10:00|TARDE|00000000-0000-0000-0000-000000000125"),
                 snapshot.programasSemana().get(0).programaSemanaSchedule().stream()
                         .map(this::semanaScheduleKey)
                         .toList());
@@ -101,23 +101,23 @@ class BuildProgramaSnapshotUseCaseTest {
         assertEquals(1, snapshot.programasEscola().get(0).atEscolaSemana().size());
         assertEquals("SEGUNDA", snapshot.programasEscola().get(0).atEscolaSemana().get(0).diaSemana());
         assertEquals(List.of(
-                        "08:00|09:00|MANHA|00000000-0000-0000-0000-000000000210",
-                        "09:00|10:00|MANHA|00000000-0000-0000-0000-000000000220",
-                        "09:00|10:00|TARDE|00000000-0000-0000-0000-000000000230"),
+                "08:00|09:00|MANHA|00000000-0000-0000-0000-000000000210",
+                "09:00|10:00|MANHA|00000000-0000-0000-0000-000000000220",
+                "09:00|10:00|TARDE|00000000-0000-0000-0000-000000000230"),
                 snapshot.programasEscola().get(0).atEscolaSemana().get(0).atEscolaSemanaSchedule().stream()
                         .map(this::atEscolaScheduleKey)
                         .toList());
 
         assertEquals(List.of(
-                        uuid(3001), uuid(3002), uuid(3003)),
+                uuid(3001), uuid(3002), uuid(3003)),
                 snapshot.nucleoPatient().stream().map(NucleoPatientDTO::nucleoPatientId).toList());
         assertEquals(List.of(
-                        uuid(4001), uuid(4002)),
+                uuid(4001), uuid(4002)),
                 snapshot.nucleoPatient().get(0).nucleoPatientResponsavel().stream()
                         .map(NucleoResponsavelDTO::responsavelId)
                         .toList());
         assertEquals(List.of(
-                        uuid(5001), uuid(5002)),
+                uuid(5001), uuid(5002)),
                 snapshot.nucleoPatient().get(0).abordagens().stream()
                         .map(a -> a.abordagemId())
                         .toList());
@@ -285,9 +285,10 @@ class BuildProgramaSnapshotUseCaseTest {
                 .build();
     }
 
-    private static NucleoPatientResponsavel responsavel(UUID responsavelId, UUID nucleoPatientId, ResponsavelRole role) {
+    private static NucleoPatientResponsavel responsavel(UUID responsavelId, UUID nucleoPatientId,
+            ResponsavelRole role) {
         return NucleoPatientResponsavel.builder()
-                .id(uuid(9000) )
+                .id(uuid(9000))
                 .nucleoPatientId(nucleoPatientId)
                 .responsavelId(responsavelId)
                 .role(role)

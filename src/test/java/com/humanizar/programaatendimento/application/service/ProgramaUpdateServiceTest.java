@@ -18,6 +18,7 @@ import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -143,13 +144,13 @@ class ProgramaUpdateServiceTest {
         when(buildProgramaCommandsUseCase.execute(payload.nucleoPatient())).thenReturn(commandPayload);
 
         doAnswer(inv -> {
-            Callable<?> businessLogic = inv.getArgument(3);
+            Callable<ProgramaAtendimentoUpdateResponseDTO> businessLogic = inv.getArgument(3);
             return businessLogic.call();
         }).when(buildProgramaTemplateUsecase).executeWithPendingGuard(
                 eq(pendingEventId),
                 eq(correlationId.toString()),
                 eq(false),
-                any(Callable.class));
+                ArgumentMatchers.<Callable<ProgramaAtendimentoUpdateResponseDTO>>any());
 
         ProgramaAtendimentoUpdateResponseDTO response = service.updateByPatientId(pathPatientId, envelope);
 

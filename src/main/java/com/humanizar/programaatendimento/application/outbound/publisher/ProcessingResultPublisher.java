@@ -56,8 +56,8 @@ public class ProcessingResultPublisher {
     }
 
     public void publishRejected(OutboundEnvelopeDTO<?> inboundEnvelope,
-                                String upStreamRoutingKey,
-                                EventOutcome eventOutcome) {
+            String upStreamRoutingKey,
+            EventOutcome eventOutcome) {
         String rejectedRoutingKey = resolveRejectedRoutingKey(upStreamRoutingKey, inboundEnvelope);
         String callbackExchange = resolveCallbackExchange(upStreamRoutingKey, inboundEnvelope);
         String reasonCode = eventOutcome.reasonCode() != null ? eventOutcome.reasonCode().name() : null;

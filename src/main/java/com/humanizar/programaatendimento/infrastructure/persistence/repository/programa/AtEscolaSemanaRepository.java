@@ -15,4 +15,3 @@ public interface AtEscolaSemanaRepository extends JpaRepository<AtEscolaSemanaEn
 
     void deleteByProgramaEscolaId(UUID programaEscolaId);
 }
-

@@ -37,42 +37,39 @@ import com.humanizar.programaatendimento.domain.port.programa.ProgramaSemanaSche
 
 @Service
 public class BuildProgramaSnapshotUseCase {
-    private static final Comparator<String> STRING_COMPARATOR =
-            Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER);
+    private static final Comparator<String> STRING_COMPARATOR = Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER);
 
-    private static final Comparator<String> TIME_COMPARATOR =
-            Comparator.nullsLast(Comparator.naturalOrder());
+    private static final Comparator<String> TIME_COMPARATOR = Comparator.nullsLast(Comparator.naturalOrder());
 
-    private static final Comparator<String> UUID_TEXT_COMPARATOR =
-            Comparator.nullsLast(Comparator.naturalOrder());
+    private static final Comparator<String> UUID_TEXT_COMPARATOR = Comparator.nullsLast(Comparator.naturalOrder());
 
-    private static final Comparator<ProgramaSemanaScheduleDTO> PROGRAMA_SEMANA_SCHEDULE_COMPARATOR =
-            Comparator.comparing(ProgramaSemanaScheduleDTO::horarioInicio, TIME_COMPARATOR)
-                    .thenComparing(ProgramaSemanaScheduleDTO::horarioTermino, TIME_COMPARATOR)
-                    .thenComparing(ProgramaSemanaScheduleDTO::turno, STRING_COMPARATOR)
-                    .thenComparing(s -> uuidText(s.nucleoId()), UUID_TEXT_COMPARATOR);
+    private static final Comparator<ProgramaSemanaScheduleDTO> PROGRAMA_SEMANA_SCHEDULE_COMPARATOR = Comparator
+            .comparing(ProgramaSemanaScheduleDTO::horarioInicio, TIME_COMPARATOR)
+            .thenComparing(ProgramaSemanaScheduleDTO::horarioTermino, TIME_COMPARATOR)
+            .thenComparing(ProgramaSemanaScheduleDTO::turno, STRING_COMPARATOR)
+            .thenComparing(s -> uuidText(s.nucleoId()), UUID_TEXT_COMPARATOR);
 
-    private static final Comparator<AtEscolaSemanaScheduleDTO> AT_ESCOLA_SEMANA_SCHEDULE_COMPARATOR =
-            Comparator.comparing(AtEscolaSemanaScheduleDTO::horarioInicio, TIME_COMPARATOR)
-                    .thenComparing(AtEscolaSemanaScheduleDTO::horarioTermino, TIME_COMPARATOR)
-                    .thenComparing(AtEscolaSemanaScheduleDTO::turno, STRING_COMPARATOR)
-                    .thenComparing(s -> uuidText(s.nucleoId()), UUID_TEXT_COMPARATOR);
+    private static final Comparator<AtEscolaSemanaScheduleDTO> AT_ESCOLA_SEMANA_SCHEDULE_COMPARATOR = Comparator
+            .comparing(AtEscolaSemanaScheduleDTO::horarioInicio, TIME_COMPARATOR)
+            .thenComparing(AtEscolaSemanaScheduleDTO::horarioTermino, TIME_COMPARATOR)
+            .thenComparing(AtEscolaSemanaScheduleDTO::turno, STRING_COMPARATOR)
+            .thenComparing(s -> uuidText(s.nucleoId()), UUID_TEXT_COMPARATOR);
 
-    private static final Comparator<ProgramaEscolaDTO> PROGRAMA_ESCOLA_COMPARATOR =
-            Comparator.comparing(ProgramaEscolaDTO::nomeEscola, STRING_COMPARATOR)
-                    .thenComparing(ProgramaEscolaDTO::nomeProfissional, STRING_COMPARATOR);
+    private static final Comparator<ProgramaEscolaDTO> PROGRAMA_ESCOLA_COMPARATOR = Comparator
+            .comparing(ProgramaEscolaDTO::nomeEscola, STRING_COMPARATOR)
+            .thenComparing(ProgramaEscolaDTO::nomeProfissional, STRING_COMPARATOR);
 
-    private static final Comparator<NucleoPatientDTO> NUCLEO_PATIENT_COMPARATOR =
-            Comparator.comparing((NucleoPatientDTO n) -> uuidText(n.nucleoId()), UUID_TEXT_COMPARATOR)
-                    .thenComparing(n -> uuidText(n.nucleoPatientId()), UUID_TEXT_COMPARATOR);
+    private static final Comparator<NucleoPatientDTO> NUCLEO_PATIENT_COMPARATOR = Comparator
+            .comparing((NucleoPatientDTO n) -> uuidText(n.nucleoId()), UUID_TEXT_COMPARATOR)
+            .thenComparing(n -> uuidText(n.nucleoPatientId()), UUID_TEXT_COMPARATOR);
 
-    private static final Comparator<NucleoResponsavelDTO> NUCLEO_RESPONSAVEL_COMPARATOR =
-            Comparator.comparing((NucleoResponsavelDTO r) -> uuidText(r.responsavelId()), UUID_TEXT_COMPARATOR)
-                    .thenComparing(NucleoResponsavelDTO::role, STRING_COMPARATOR);
+    private static final Comparator<NucleoResponsavelDTO> NUCLEO_RESPONSAVEL_COMPARATOR = Comparator
+            .comparing((NucleoResponsavelDTO r) -> uuidText(r.responsavelId()), UUID_TEXT_COMPARATOR)
+            .thenComparing(NucleoResponsavelDTO::role, STRING_COMPARATOR);
 
-    private static final Comparator<AbordagemPatientDTO> ABORDAGEM_COMPARATOR =
-            Comparator.comparing((AbordagemPatientDTO a) -> uuidText(a.abordagemId()), UUID_TEXT_COMPARATOR)
-                    .thenComparing(a -> uuidText(a.nucleoPatientId()), UUID_TEXT_COMPARATOR);
+    private static final Comparator<AbordagemPatientDTO> ABORDAGEM_COMPARATOR = Comparator
+            .comparing((AbordagemPatientDTO a) -> uuidText(a.abordagemId()), UUID_TEXT_COMPARATOR)
+            .thenComparing(a -> uuidText(a.nucleoPatientId()), UUID_TEXT_COMPARATOR);
 
     private final ProgramaSemanaPort programaSemanaPort;
     private final ProgramaSemanaSchedulePort programaSemanaSchedulePort;

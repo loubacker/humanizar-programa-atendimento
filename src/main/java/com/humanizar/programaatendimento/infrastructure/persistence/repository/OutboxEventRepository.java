@@ -20,19 +20,19 @@ import jakarta.persistence.QueryHint;
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEventEntity, Long> {
 
-        Optional<OutboxEventEntity> findByEventId(UUID eventId);
+    Optional<OutboxEventEntity> findByEventId(UUID eventId);
 
-        List<OutboxEventEntity> findByStatusInAndNextRetryAtLessThanEqualOrderByCreatedAtAsc(
-                        List<OutboxStatus> status, LocalDateTime cutoff);
+    List<OutboxEventEntity> findByStatusInAndNextRetryAtLessThanEqualOrderByCreatedAtAsc(
+            List<OutboxStatus> status, LocalDateTime cutoff);
 
-        @Lock(LockModeType.PESSIMISTIC_WRITE)
-        @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))
-        List<OutboxEventEntity> findByStatusInAndNextRetryAtLessThanEqualOrderByCreatedAtAsc(
-                        List<OutboxStatus> status, LocalDateTime cutoff, Pageable pageable);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))
+    List<OutboxEventEntity> findByStatusInAndNextRetryAtLessThanEqualOrderByCreatedAtAsc(
+            List<OutboxStatus> status, LocalDateTime cutoff, Pageable pageable);
 
-        List<OutboxEventEntity> findByCorrelationId(UUID correlationId);
+    List<OutboxEventEntity> findByCorrelationId(UUID correlationId);
 
-        List<OutboxEventEntity> findByAggregateTypeAndAggregateId(String aggregateType, UUID aggregateId);
+    List<OutboxEventEntity> findByAggregateTypeAndAggregateId(String aggregateType, UUID aggregateId);
 
-        void deleteByStatusAndCreatedAtBefore(OutboxStatus status, LocalDateTime cutoff);
+    void deleteByStatusAndCreatedAtBefore(OutboxStatus status, LocalDateTime cutoff);
 }

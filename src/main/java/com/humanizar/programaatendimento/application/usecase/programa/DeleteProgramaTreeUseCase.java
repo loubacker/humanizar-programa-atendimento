@@ -54,4 +54,3 @@ public class DeleteProgramaTreeUseCase {
         programaEscolaPort.deleteByProgramaAtendimentoId(programaId);
     }
 }
-

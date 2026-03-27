@@ -110,8 +110,10 @@ public class ProgramaUpdateService {
                     updated.setCreatedAt(existing.getCreatedAt());
                     programaAtendimentoPort.save(updated);
 
-                    saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(), correlationIdText);
-                    saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(), correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(),
+                            correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(),
+                            correlationIdText);
 
                     deleteAbordagensUseCase.execute(patientId);
 

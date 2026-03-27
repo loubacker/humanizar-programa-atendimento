@@ -13,30 +13,30 @@ import com.humanizar.programaatendimento.application.catalog.RoutingKeyCatalog;
 @Configuration
 public class RabbitAcolhimentoBindingConfig {
 
-        @Bean
-        public Binding bindAcolhimentoCreated(
-                        @Qualifier("programaAcolhimentoQueue") Queue programaAcolhimentoQueue,
-                        @Qualifier("acolhimentoExchange") TopicExchange acolhimentoExchange) {
-                return BindingBuilder.bind(programaAcolhimentoQueue)
-                                .to(acolhimentoExchange)
-                                .with(RoutingKeyCatalog.ACOLHIMENTO_CREATED_V1);
-        }
+    @Bean
+    public Binding bindAcolhimentoCreated(
+            @Qualifier("programaAcolhimentoQueue") Queue programaAcolhimentoQueue,
+            @Qualifier("acolhimentoExchange") TopicExchange acolhimentoExchange) {
+        return BindingBuilder.bind(programaAcolhimentoQueue)
+                .to(acolhimentoExchange)
+                .with(RoutingKeyCatalog.ACOLHIMENTO_CREATED_V1);
+    }
 
-        @Bean
-        public Binding bindAcolhimentoUpdated(
-                        @Qualifier("programaAcolhimentoQueue") Queue programaAcolhimentoQueue,
-                        @Qualifier("acolhimentoExchange") TopicExchange acolhimentoExchange) {
-                return BindingBuilder.bind(programaAcolhimentoQueue)
-                                .to(acolhimentoExchange)
-                                .with(RoutingKeyCatalog.ACOLHIMENTO_UPDATED_V1);
-        }
+    @Bean
+    public Binding bindAcolhimentoUpdated(
+            @Qualifier("programaAcolhimentoQueue") Queue programaAcolhimentoQueue,
+            @Qualifier("acolhimentoExchange") TopicExchange acolhimentoExchange) {
+        return BindingBuilder.bind(programaAcolhimentoQueue)
+                .to(acolhimentoExchange)
+                .with(RoutingKeyCatalog.ACOLHIMENTO_UPDATED_V1);
+    }
 
-        @Bean
-        public Binding bindAcolhimentoDeleted(
-                        @Qualifier("programaAcolhimentoQueue") Queue programaAcolhimentoQueue,
-                        @Qualifier("acolhimentoExchange") TopicExchange acolhimentoExchange) {
-                return BindingBuilder.bind(programaAcolhimentoQueue)
-                                .to(acolhimentoExchange)
-                                .with(RoutingKeyCatalog.ACOLHIMENTO_DELETED_V1);
-        }
+    @Bean
+    public Binding bindAcolhimentoDeleted(
+            @Qualifier("programaAcolhimentoQueue") Queue programaAcolhimentoQueue,
+            @Qualifier("acolhimentoExchange") TopicExchange acolhimentoExchange) {
+        return BindingBuilder.bind(programaAcolhimentoQueue)
+                .to(acolhimentoExchange)
+                .with(RoutingKeyCatalog.ACOLHIMENTO_DELETED_V1);
+    }
 }

@@ -73,8 +73,7 @@ class AcolhimentoInboundServiceTest {
                 patientId,
                 nucleoId,
                 List.of(new NucleoResponsavelDTO(responsavelId, "COORDENADOR")),
-                UUID.randomUUID()
-        );
+                UUID.randomUUID());
 
         verify(responsavelPort).saveAll(responsaveisCaptor.capture());
         List<NucleoPatientResponsavel> saved = responsaveisCaptor.getValue();
@@ -112,8 +111,7 @@ class AcolhimentoInboundServiceTest {
                         incomingNucleoPatientId,
                         incomingNucleoId,
                         List.of(new NucleoResponsavelDTO(UUID.randomUUID(), "COORDENADOR")))),
-                UUID.randomUUID()
-        );
+                UUID.randomUUID());
 
         verify(nucleoPatientPort).deleteByPatientIdAndNucleoId(patientId, currentNucleoId);
         verify(nucleoPatientPort).save(any());
@@ -139,8 +137,7 @@ class AcolhimentoInboundServiceTest {
                 ProgramaAtendimentoException.class,
                 () -> service.deleteAllNucleosByPatientId(
                         patientId,
-                        UUID.randomUUID()
-                ));
+                        UUID.randomUUID()));
 
         assertEquals(ReasonCode.HAS_ABORDAGEM, ex.getReasonCode());
         verify(nucleoPatientPort).findAllByPatientId(patientId);

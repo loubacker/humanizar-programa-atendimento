@@ -18,7 +18,7 @@ public class AtEscolaSemana {
     }
 
     public AtEscolaSemana(UUID id, UUID programaEscolaId, Semana diaSemana,
-                          List<AtEscolaSemanaSchedule> atEscolaSemanaSchedule) {
+            List<AtEscolaSemanaSchedule> atEscolaSemanaSchedule) {
         this.id = id;
         this.programaEscolaId = programaEscolaId;
         this.diaSemana = diaSemana;
@@ -109,4 +109,3 @@ public class AtEscolaSemana {
         return Objects.hash(id, programaEscolaId, diaSemana, atEscolaSemanaSchedule);
     }
 }
-

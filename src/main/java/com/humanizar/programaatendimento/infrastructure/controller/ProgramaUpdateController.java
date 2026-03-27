@@ -37,7 +37,8 @@ public class ProgramaUpdateController {
                 ? envelope.payload().patientId().toString()
                 : null;
 
-        log.info("Recebido PUT /api/v1/programa-atendimento/update/{}. correlationId={}, payloadPatientId={}, operacao=UPDATE",
+        log.info(
+                "Recebido PUT /api/v1/programa-atendimento/update/{}. correlationId={}, payloadPatientId={}, operacao=UPDATE",
                 patientId, correlationId, payloadPatientId);
         ProgramaAtendimentoUpdateResponseDTO response = programaUpdateService.updateByPatientId(
                 patientId, envelope);
