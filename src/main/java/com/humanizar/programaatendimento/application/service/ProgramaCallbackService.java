@@ -58,7 +58,13 @@ public class ProgramaCallbackService {
     }
 
     private Status resolveTargetStatus(String callbackStatus) {
-        return "PROCESSED".equalsIgnoreCase(callbackStatus) ? Status.SUCCESS : Status.ERROR;
+        if ("PROCESSED".equalsIgnoreCase(callbackStatus)) {
+            return Status.SUCCESS;
+        }
+        if (!"REJECTED".equalsIgnoreCase(callbackStatus)) {
+            log.warn("Status de callback inesperado recebido: '{}'. Tratado como ERROR.", callbackStatus);
+        }
+        return Status.ERROR;
     }
 
     private void validateCallback(CallbackDTO callback) {

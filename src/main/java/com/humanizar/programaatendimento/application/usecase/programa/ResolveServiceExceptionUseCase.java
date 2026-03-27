@@ -36,8 +36,7 @@ public class ResolveServiceExceptionUseCase {
             String message = current.getMessage();
             if (message != null) {
                 String normalized = message.toLowerCase(Locale.ROOT);
-                if (normalized.contains("uk_programa_patient_id")
-                        || normalized.contains("uk_nucleo_patient_patient_nucleo")
+                if (normalized.contains("uk_nucleo_patient_nucleo")
                         || normalized.contains("duplicate key")
                         || normalized.contains("restrição de unicidade")
                         || normalized.contains("restricao de unicidade")) {

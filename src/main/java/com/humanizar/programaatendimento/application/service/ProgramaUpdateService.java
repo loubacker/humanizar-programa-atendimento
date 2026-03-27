@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.humanizar.programaatendimento.application.inbound.dto.InboundContextDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.InboundEnvelopeDTO;
@@ -18,7 +19,7 @@ import com.humanizar.programaatendimento.application.usecase.programa.BuildProgr
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.ResolveServiceExceptionUseCase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveProgramaTreeUseCase;
@@ -44,7 +45,7 @@ public class ProgramaUpdateService {
     private final BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase;
     private final BuildProgramaCommandsUseCase buildProgramaCommandsUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
-    private final ResolveServiceExceptionUseCase resolveServiceExceptionUseCase;
+    private final BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
     private final UpdateOutboxCommandUseCase updateOutboxCommandUseCase;
 
     public ProgramaUpdateService(
@@ -59,7 +60,7 @@ public class ProgramaUpdateService {
             BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase,
             BuildProgramaCommandsUseCase buildProgramaCommandsUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
-            ResolveServiceExceptionUseCase resolveServiceExceptionUseCase,
+            BuildProgramaTemplateUsecase buildProgramaTemplateUsecase,
             UpdateOutboxCommandUseCase updateOutboxCommandUseCase) {
         this.inboundContextMapper = inboundContextMapper;
         this.inboundProgramaAtendimentoMapper = inboundProgramaAtendimentoMapper;
@@ -72,10 +73,11 @@ public class ProgramaUpdateService {
         this.buildProgramaAtendimentoUseCase = buildProgramaAtendimentoUseCase;
         this.buildProgramaCommandsUseCase = buildProgramaCommandsUseCase;
         this.savePendingProgramaUseCase = savePendingProgramaUseCase;
-        this.resolveServiceExceptionUseCase = resolveServiceExceptionUseCase;
+        this.buildProgramaTemplateUsecase = buildProgramaTemplateUsecase;
         this.updateOutboxCommandUseCase = updateOutboxCommandUseCase;
     }
 
+    @Transactional
     public ProgramaAtendimentoUpdateResponseDTO updateByPatientId(
             UUID pathPatientId,
             InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope) {
@@ -98,40 +100,36 @@ public class ProgramaUpdateService {
                 correlationId, patientId, programaId, OperationType.UPDATE,
                 savePendingProgramaUseCase.serializePayload(payload, correlationIdText));
 
-        try {
-            deleteProgramaTreeUseCase.execute(programaId);
+        return buildProgramaTemplateUsecase.executeWithPendingGuard(
+                pending.getEventId(), correlationIdText, false,
+                () -> {
+                    deleteProgramaTreeUseCase.execute(programaId);
 
-            ProgramaAtendimento updated = buildProgramaAtendimentoUseCase.execute(
-                    programaId, patientId, payload, correlationIdText);
-            updated.setCreatedAt(existing.getCreatedAt());
-            programaAtendimentoPort.save(updated);
+                    ProgramaAtendimento updated = buildProgramaAtendimentoUseCase.execute(
+                            programaId, patientId, payload, correlationIdText);
+                    updated.setCreatedAt(existing.getCreatedAt());
+                    programaAtendimentoPort.save(updated);
 
-            saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(), correlationIdText);
-            saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(), correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(), correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(), correlationIdText);
 
-            deleteAbordagensUseCase.execute(patientId);
+                    deleteAbordagensUseCase.execute(patientId);
 
-            List<AcolhimentoNucleoPatientDTO> nucleoCommands = toNucleoCommands(payload.nucleoPatient());
-            acolhimentoInboundService.applyNucleoPatientSnapshot(
-                    patientId, nucleoCommands, correlationId);
+                    List<AcolhimentoNucleoPatientDTO> nucleoCommands = toNucleoCommands(payload.nucleoPatient());
+                    acolhimentoInboundService.applyNucleoPatientSnapshot(
+                            patientId, nucleoCommands, correlationId);
 
-            saveAbordagensUseCase.execute(payload.nucleoPatient());
+                    saveAbordagensUseCase.execute(payload.nucleoPatient());
 
-            List<ProgramaCommandDTO> commandPayload = buildProgramaCommandsUseCase.execute(
-                    payload.nucleoPatient());
-            updateOutboxCommandUseCase.execute(
-                    context.envelop(), pending.getEventId(), programaId, commandPayload);
-        } catch (ProgramaAtendimentoException ex) {
-            savePendingProgramaUseCase.markAsError(pending.getEventId());
-            throw ex;
-        } catch (Exception ex) {
-            savePendingProgramaUseCase.markAsError(pending.getEventId());
-            throw resolveServiceExceptionUseCase.resolve(ex, correlationIdText, false);
-        }
+                    List<ProgramaCommandDTO> commandPayload = buildProgramaCommandsUseCase.execute(
+                            payload.nucleoPatient());
+                    updateOutboxCommandUseCase.execute(
+                            context.envelop(), pending.getEventId(), programaId, commandPayload);
 
-        return new ProgramaAtendimentoUpdateResponseDTO(
-                "Programa de Atendimento Atualizado com Sucesso para Paciente " + patientId,
-                patientId, correlationId);
+                    return new ProgramaAtendimentoUpdateResponseDTO(
+                            "Programa de Atendimento Atualizado com Sucesso para Paciente " + patientId,
+                            patientId, correlationId);
+                });
     }
 
     private List<AcolhimentoNucleoPatientDTO> toNucleoCommands(List<NucleoPatientDTO> nucleoPatients) {

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.humanizar.programaatendimento.application.inbound.dto.InboundContextDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.InboundEnvelopeDTO;
@@ -15,7 +16,7 @@ import com.humanizar.programaatendimento.application.outbound.dto.ProgramaComman
 import com.humanizar.programaatendimento.application.usecase.outbox.CreateOutboxCommandUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaAtendimentoUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.ResolveServiceExceptionUseCase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveProgramaTreeUseCase;
@@ -41,7 +42,7 @@ public class ProgramaCreateService {
     private final BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase;
     private final BuildProgramaCommandsUseCase buildProgramaCommandsUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
-    private final ResolveServiceExceptionUseCase resolveServiceExceptionUseCase;
+    private final BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
     private final CreateOutboxCommandUseCase createOutboxCommandUseCase;
 
     public ProgramaCreateService(
@@ -55,7 +56,7 @@ public class ProgramaCreateService {
             BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase,
             BuildProgramaCommandsUseCase buildProgramaCommandsUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
-            ResolveServiceExceptionUseCase resolveServiceExceptionUseCase,
+            BuildProgramaTemplateUsecase buildProgramaTemplateUsecase,
             CreateOutboxCommandUseCase createOutboxCommandUseCase) {
         this.inboundContextMapper = inboundContextMapper;
         this.inboundProgramaAtendimentoMapper = inboundProgramaAtendimentoMapper;
@@ -67,10 +68,11 @@ public class ProgramaCreateService {
         this.buildProgramaAtendimentoUseCase = buildProgramaAtendimentoUseCase;
         this.buildProgramaCommandsUseCase = buildProgramaCommandsUseCase;
         this.savePendingProgramaUseCase = savePendingProgramaUseCase;
-        this.resolveServiceExceptionUseCase = resolveServiceExceptionUseCase;
+        this.buildProgramaTemplateUsecase = buildProgramaTemplateUsecase;
         this.createOutboxCommandUseCase = createOutboxCommandUseCase;
     }
 
+    @Transactional
     public ProgramaAtendimentoCreateResponseDTO register(
             InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope) {
         InboundContextDTO<ProgramaAtendimentoDTO> context = inboundContextMapper.fromEnvelop(envelope);
@@ -92,32 +94,28 @@ public class ProgramaCreateService {
                     "Programa ja existe para patientId=" + patientId);
         }
 
-        try {
-            UUID programaId = UUID.randomUUID();
-            ProgramaAtendimento programa = buildProgramaAtendimentoUseCase.execute(
-                    programaId, patientId, payload, correlationIdText);
-            programaAtendimentoPort.save(programa);
+        return buildProgramaTemplateUsecase.executeWithPendingGuard(
+                pending.getEventId(), correlationIdText, true,
+                () -> {
+                    UUID programaId = UUID.randomUUID();
+                    ProgramaAtendimento programa = buildProgramaAtendimentoUseCase.execute(
+                            programaId, patientId, payload, correlationIdText);
+                    programaAtendimentoPort.save(programa);
 
-            saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(), correlationIdText);
-            saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(), correlationIdText);
-            saveNucleoPatients(payload.nucleoPatient(), patientId, correlationId);
-            saveAbordagensUseCase.execute(payload.nucleoPatient());
+                    saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(), correlationIdText);
+                    saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(), correlationIdText);
+                    saveNucleoPatients(payload.nucleoPatient(), patientId, correlationId);
+                    saveAbordagensUseCase.execute(payload.nucleoPatient());
 
-            List<ProgramaCommandDTO> commandPayload = buildProgramaCommandsUseCase.execute(
-                    payload.nucleoPatient());
-            createOutboxCommandUseCase.execute(
-                    context.envelop(), pending.getEventId(), programaId, commandPayload);
-        } catch (ProgramaAtendimentoException ex) {
-            savePendingProgramaUseCase.markAsError(pending.getEventId());
-            throw ex;
-        } catch (Exception ex) {
-            savePendingProgramaUseCase.markAsError(pending.getEventId());
-            throw resolveServiceExceptionUseCase.resolve(ex, correlationIdText, true);
-        }
+                    List<ProgramaCommandDTO> commandPayload = buildProgramaCommandsUseCase.execute(
+                            payload.nucleoPatient());
+                    createOutboxCommandUseCase.execute(
+                            context.envelop(), pending.getEventId(), programaId, commandPayload);
 
-        return new ProgramaAtendimentoCreateResponseDTO(
-                "Programa de Atendimento Criado com Sucesso para Paciente " + patientId,
-                patientId, correlationId);
+                    return new ProgramaAtendimentoCreateResponseDTO(
+                            "Programa de Atendimento Criado com Sucesso para Paciente " + patientId,
+                            patientId, correlationId);
+                });
     }
 
     private void saveNucleoPatients(

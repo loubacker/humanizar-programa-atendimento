@@ -1,13 +1,12 @@
 package com.humanizar.programaatendimento.application.inbound.messaging.mapper;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +25,7 @@ class EnvelopeInboundMapperTest {
         OutboundEnvelopeDTO<Object> parsed = mapper.parseEnvelope(body);
 
         assertDoesNotThrow(() -> mapper.validate(parsed));
-        assertEquals(parsed.correlationId().toString(), mapper.correlationIdAsString(parsed));
+        assertEquals(parsed.correlationId().toString(), InboundAcolhimentoValidation.correlationIdAsString(parsed));
     }
 
     @Test

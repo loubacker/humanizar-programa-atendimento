@@ -5,6 +5,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +32,7 @@ public class SavePendingProgramaUseCase {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PendingProgramaAtendimento save(
             UUID correlationId, UUID patientId, UUID programaAtendimentoId,
             OperationType operationType, String payloadSnapshot) {
@@ -43,6 +46,7 @@ public class SavePendingProgramaUseCase {
         return pendingPort.save(pending);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markAsError(UUID eventId) {
         try {
             pendingPort.findByEventId(eventId).ifPresent(pending -> {

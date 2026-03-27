@@ -3,6 +3,7 @@ package com.humanizar.programaatendimento.application.service;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.humanizar.programaatendimento.application.inbound.dto.InboundDeleteContextDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.InboundEnvelopeDTO;
@@ -13,7 +14,7 @@ import com.humanizar.programaatendimento.application.usecase.outbox.DeleteOutbox
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaSnapshotUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.ResolveServiceExceptionUseCase;
+import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUsecase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.domain.exception.ProgramaAtendimentoException;
 import com.humanizar.programaatendimento.domain.model.pending.PendingProgramaAtendimento;
@@ -33,7 +34,7 @@ public class ProgramaDeleteService {
     private final DeleteAbordagensUseCase deleteAbordagensUseCase;
     private final BuildProgramaSnapshotUseCase buildProgramaSnapshotUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
-    private final ResolveServiceExceptionUseCase resolveServiceExceptionUseCase;
+    private final BuildProgramaTemplateUsecase buildProgramaTemplateUsecase;
     private final DeleteOutboxCommandUseCase deleteOutboxCommandUseCase;
 
     public ProgramaDeleteService(
@@ -44,7 +45,7 @@ public class ProgramaDeleteService {
             DeleteAbordagensUseCase deleteAbordagensUseCase,
             BuildProgramaSnapshotUseCase buildProgramaSnapshotUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
-            ResolveServiceExceptionUseCase resolveServiceExceptionUseCase,
+            BuildProgramaTemplateUsecase buildProgramaTemplateUsecase,
             DeleteOutboxCommandUseCase deleteOutboxCommandUseCase) {
         this.inboundDeleteContextMapper = inboundDeleteContextMapper;
         this.programaAtendimentoPort = programaAtendimentoPort;
@@ -53,10 +54,11 @@ public class ProgramaDeleteService {
         this.deleteAbordagensUseCase = deleteAbordagensUseCase;
         this.buildProgramaSnapshotUseCase = buildProgramaSnapshotUseCase;
         this.savePendingProgramaUseCase = savePendingProgramaUseCase;
-        this.resolveServiceExceptionUseCase = resolveServiceExceptionUseCase;
+        this.buildProgramaTemplateUsecase = buildProgramaTemplateUsecase;
         this.deleteOutboxCommandUseCase = deleteOutboxCommandUseCase;
     }
 
+    @Transactional
     public ProgramaAtendimentoDeleteResponseDTO deleteByPatientId(
             UUID pathPatientId,
             InboundEnvelopeDTO<ProgramaDeleteDTO> envelop) {
@@ -76,25 +78,21 @@ public class ProgramaDeleteService {
                 correlationId, patientId, existing.getId(), OperationType.DELETE,
                 savePendingProgramaUseCase.serializePayload(snapshot, correlationIdText));
 
-        try {
-            deleteProgramaTreeUseCase.execute(existing.getId());
-            deleteAbordagensUseCase.execute(patientId);
+        return buildProgramaTemplateUsecase.executeWithPendingGuard(
+                pending.getEventId(), correlationIdText, false,
+                () -> {
+                    deleteProgramaTreeUseCase.execute(existing.getId());
+                    deleteAbordagensUseCase.execute(patientId);
 
-            acolhimentoInboundService.deleteAllNucleosByPatientId(
-                    patientId, correlationId);
+                    acolhimentoInboundService.deleteAllNucleosByPatientId(
+                            patientId, correlationId);
 
-            programaAtendimentoPort.deleteByPatientId(patientId);
+                    programaAtendimentoPort.deleteByPatientId(patientId);
 
-            deleteOutboxCommandUseCase.execute(
-                    context.envelop(), pending.getEventId(), existing.getId());
-        } catch (ProgramaAtendimentoException ex) {
-            savePendingProgramaUseCase.markAsError(pending.getEventId());
-            throw ex;
-        } catch (Exception ex) {
-            savePendingProgramaUseCase.markAsError(pending.getEventId());
-            throw resolveServiceExceptionUseCase.resolve(ex, correlationIdText, false);
-        }
+                    deleteOutboxCommandUseCase.execute(
+                            context.envelop(), pending.getEventId(), existing.getId());
 
-        return new ProgramaAtendimentoDeleteResponseDTO("SUCCESS", "DELETE", patientId);
+                    return new ProgramaAtendimentoDeleteResponseDTO("SUCCESS", "DELETE", patientId);
+                });
     }
 }

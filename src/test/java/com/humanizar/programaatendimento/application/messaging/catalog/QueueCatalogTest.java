@@ -9,7 +9,8 @@ class QueueCatalogTest {
 
     @Test
     void shouldExposeExpectedQueueLiterals() {
-        assertEquals("humanizar-programa.acolhimento", QueueCatalog.PROGRAMA_ATENDIMENTO_ACOLHIMENTO);
-        assertEquals("humanizar-programa.acolhimento.dlq", QueueCatalog.PROGRAMA_ATENDIMENTO_ACOLHIMENTO_DLQ);
+        assertEquals("humanizar.programa-atendimento.acolhimento", QueueCatalog.PROGRAMA_ATENDIMENTO_ACOLHIMENTO);
+        assertEquals("humanizar.programa-atendimento.acolhimento.dlq",
+                QueueCatalog.PROGRAMA_ATENDIMENTO_ACOLHIMENTO_DLQ);
     }
 }
