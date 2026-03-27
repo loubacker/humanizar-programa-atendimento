@@ -1,5 +1,9 @@
 package com.humanizar.programaatendimento.application.inbound.messaging.mapper;
 
+import static com.humanizar.programaatendimento.application.inbound.messaging.mapper.InboundAcolhimentoValidation.correlationIdAsString;
+import static com.humanizar.programaatendimento.application.inbound.messaging.mapper.InboundAcolhimentoValidation.requireField;
+import static com.humanizar.programaatendimento.application.inbound.messaging.mapper.InboundAcolhimentoValidation.requireNotBlank;
+
 import java.io.IOException;
 
 import org.springframework.stereotype.Component;
@@ -21,7 +25,7 @@ public class EnvelopeInboundMapper {
 
     public <T> OutboundEnvelopeDTO<T> parseEnvelope(byte[] body) {
         try {
-            return objectMapper.readValue(body, new TypeReference<OutboundEnvelopeDTO<T>>() {
+            return objectMapper.readValue(body, new TypeReference<>() {
             });
         } catch (IOException ex) {
             throw new ProgramaAtendimentoException(
@@ -54,31 +58,6 @@ public class EnvelopeInboundMapper {
                     ReasonCode.VALIDATION_ERROR,
                     correlationId,
                     "Campo invalido: eventVersion deve ser >= 1");
-        }
-    }
-
-    public String correlationIdAsString(OutboundEnvelopeDTO<?> envelope) {
-        if (envelope == null || envelope.correlationId() == null) {
-            return null;
-        }
-        return envelope.correlationId().toString();
-    }
-
-    private void requireField(Object value, String fieldName, String correlationId) {
-        if (value == null) {
-            throw new ProgramaAtendimentoException(
-                    ReasonCode.INBOUND_REQUIRED_FIELD,
-                    correlationId,
-                    "Campo obrigatorio ausente: " + fieldName);
-        }
-    }
-
-    private void requireNotBlank(String value, String fieldName, String correlationId) {
-        if (value == null || value.isBlank()) {
-            throw new ProgramaAtendimentoException(
-                    ReasonCode.INBOUND_REQUIRED_FIELD,
-                    correlationId,
-                    "Campo obrigatorio ausente: " + fieldName);
         }
     }
 }

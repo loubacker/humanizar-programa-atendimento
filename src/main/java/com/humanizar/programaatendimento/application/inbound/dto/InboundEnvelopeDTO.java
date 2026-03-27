@@ -11,4 +11,8 @@ public record InboundEnvelopeDTO<T>(
         String userAgent,
         String originIp,
         T payload) {
+
+    public String correlationIdAsString() {
+        return correlationId != null ? correlationId.toString() : null;
+    }
 }

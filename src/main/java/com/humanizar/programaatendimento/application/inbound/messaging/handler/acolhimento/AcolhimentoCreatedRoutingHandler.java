@@ -4,23 +4,23 @@ import org.springframework.stereotype.Component;
 
 import com.humanizar.programaatendimento.application.catalog.ConsumerCatalog;
 import com.humanizar.programaatendimento.application.catalog.RoutingKeyCatalog;
-import com.humanizar.programaatendimento.application.inbound.dto.messaging.AcolhimentoCreatedDTO;
+import com.humanizar.programaatendimento.application.inbound.dto.messaging.AcolhimentoUpsertDTO;
 import com.humanizar.programaatendimento.application.outbound.dto.OutboundEnvelopeDTO;
 import com.humanizar.programaatendimento.application.inbound.messaging.handler.EventOutcome;
-import com.humanizar.programaatendimento.application.inbound.messaging.mapper.acolhimento.InboundAcolhimentoCreateMapper;
-import com.humanizar.programaatendimento.application.usecase.acolhimento.AcolhimentoCreatedUseCase;
+import com.humanizar.programaatendimento.application.inbound.messaging.mapper.acolhimento.InboundAcolhimentoUpsertMapper;
+import com.humanizar.programaatendimento.application.usecase.acolhimento.AcolhimentoUpsertUseCase;
 
 @Component
 public class AcolhimentoCreatedRoutingHandler implements AcolhimentoRoutingHandler {
 
-    private final InboundAcolhimentoCreateMapper inboundAcolhimentoCreateMapper;
-    private final AcolhimentoCreatedUseCase acolhimentoCreatedUseCase;
+    private final InboundAcolhimentoUpsertMapper inboundAcolhimentoUpsertMapper;
+    private final AcolhimentoUpsertUseCase acolhimentoUpsertUseCase;
 
     public AcolhimentoCreatedRoutingHandler(
-            InboundAcolhimentoCreateMapper inboundAcolhimentoCreateMapper,
-            AcolhimentoCreatedUseCase acolhimentoCreatedUseCase) {
-        this.inboundAcolhimentoCreateMapper = inboundAcolhimentoCreateMapper;
-        this.acolhimentoCreatedUseCase = acolhimentoCreatedUseCase;
+            InboundAcolhimentoUpsertMapper inboundAcolhimentoUpsertMapper,
+            AcolhimentoUpsertUseCase acolhimentoUpsertUseCase) {
+        this.inboundAcolhimentoUpsertMapper = inboundAcolhimentoUpsertMapper;
+        this.acolhimentoUpsertUseCase = acolhimentoUpsertUseCase;
     }
 
     @Override
@@ -30,8 +30,8 @@ public class AcolhimentoCreatedRoutingHandler implements AcolhimentoRoutingHandl
 
     @Override
     public EventOutcome handle(OutboundEnvelopeDTO<Object> envelope, String sourceExchange) {
-        AcolhimentoCreatedDTO payload = inboundAcolhimentoCreateMapper.toPayload(envelope);
-        return acolhimentoCreatedUseCase.execute(
+        AcolhimentoUpsertDTO payload = inboundAcolhimentoUpsertMapper.toPayload(envelope);
+        return acolhimentoUpsertUseCase.execute(
                 ConsumerCatalog.ACOLHIMENTO_CONSUMER,
                 routingKey(),
                 envelope,

@@ -32,13 +32,10 @@ public class ProgramaUpdateController {
     public ResponseEntity<ProgramaAtendimentoUpdateResponseDTO> update(
             @PathVariable UUID patientId,
             @RequestBody InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope) {
-        String correlationId = envelope != null && envelope.correlationId() != null
-                ? envelope.correlationId().toString()
+        String correlationId = envelope.correlationIdAsString();
+        String payloadPatientId = envelope.payload() != null && envelope.payload().patientId() != null
+                ? envelope.payload().patientId().toString()
                 : null;
-        String payloadPatientId = envelope != null && envelope.payload() != null
-                && envelope.payload().patientId() != null
-                        ? envelope.payload().patientId().toString()
-                        : null;
 
         log.info("Recebido PUT /api/v1/programa-atendimento/update/{}. correlationId={}, payloadPatientId={}, operacao=UPDATE",
                 patientId, correlationId, payloadPatientId);

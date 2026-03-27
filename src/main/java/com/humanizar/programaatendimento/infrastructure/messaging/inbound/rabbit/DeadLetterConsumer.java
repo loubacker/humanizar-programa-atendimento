@@ -51,10 +51,9 @@ public class DeadLetterConsumer {
                 message.getMessageProperties().getConsumerQueue());
 
         try {
-            OutboundEnvelopeDTO<Object> envelopeDto = objectMapper.readValue(
+            OutboundEnvelopeDTO<Object> envelope = objectMapper.readValue(
                     message.getBody(), new TypeReference<>() {
                     });
-            OutboundEnvelopeDTO<Object> envelope = envelopeDto;
 
             if (originalRoutingKey != null && RoutingKeyCatalog.isAcolhimentoInbound(originalRoutingKey)) {
                 EventOutcome rejection = EventOutcome.failed(

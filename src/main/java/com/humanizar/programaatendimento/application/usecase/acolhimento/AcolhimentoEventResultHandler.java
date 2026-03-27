@@ -7,10 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
-import com.humanizar.programaatendimento.application.outbound.dto.OutboundEnvelopeDTO;
-import com.humanizar.programaatendimento.application.inbound.dto.messaging.AcolhimentoUpdatedDTO;
 import com.humanizar.programaatendimento.application.inbound.messaging.handler.EventOutcome;
-import com.humanizar.programaatendimento.application.service.AcolhimentoInboundService;
+import com.humanizar.programaatendimento.application.outbound.dto.OutboundEnvelopeDTO;
 import com.humanizar.programaatendimento.domain.exception.ProgramaAtendimentoException;
 import com.humanizar.programaatendimento.domain.model.ProcessedEvent;
 import com.humanizar.programaatendimento.domain.model.enums.ProcessedResult;
@@ -18,46 +16,33 @@ import com.humanizar.programaatendimento.domain.model.enums.ReasonCode;
 import com.humanizar.programaatendimento.domain.port.ProcessedEventPort;
 
 @Component
-public class AcolhimentoUpdatedUseCase {
+public class AcolhimentoEventResultHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(AcolhimentoUpdatedUseCase.class);
+    private static final Logger log = LoggerFactory.getLogger(AcolhimentoEventResultHandler.class);
 
-    private final AcolhimentoInboundService nucleoPatientService;
     private final ProcessedEventPort processedEventPort;
 
-    public AcolhimentoUpdatedUseCase(
-            AcolhimentoInboundService nucleoPatientService,
-            ProcessedEventPort processedEventPort) {
-        this.nucleoPatientService = nucleoPatientService;
+    public AcolhimentoEventResultHandler(ProcessedEventPort processedEventPort) {
         this.processedEventPort = processedEventPort;
     }
 
-    public EventOutcome execute(
+    public EventOutcome executeWithErrorHandling(
             String consumerName,
             String routingKey,
             OutboundEnvelopeDTO<?> envelope,
-            AcolhimentoUpdatedDTO command,
-            String sourceExchange) {
+            String sourceExchange,
+            Runnable businessLogic) {
 
         try {
-            nucleoPatientService.applyNucleoPatientSnapshot(
-                    command.patientId(),
-                    command.nucleoPatient(),
-                    envelope.correlationId());
+            businessLogic.run();
 
             saveProcessedEvent(buildProcessedEvent(
-                    consumerName,
-                    envelope,
-                    sourceExchange,
-                    routingKey,
-                    ProcessedResult.SUCCESS,
-                    null,
-                    null));
+                    consumerName, envelope, sourceExchange, routingKey,
+                    ProcessedResult.SUCCESS, null, null));
             return EventOutcome.success();
 
         } catch (DataIntegrityViolationException ex) {
-            log.info(
-                    "DataIntegrityViolation no processamento de atualização -- possível duplicata. consumer={}, eventId={}",
+            log.info("DataIntegrityViolation -- possível duplicata. consumer={}, eventId={}",
                     consumerName, envelope.eventId());
             return EventOutcome.ignored(ReasonCode.DUPLICATE_EVENT);
 
@@ -84,13 +69,8 @@ public class AcolhimentoUpdatedUseCase {
             log.info("Evento duplicado ignorado. eventId={}, correlationId={}, consumer={}",
                     envelope.eventId(), envelope.correlationId(), consumerName);
             saveProcessedEvent(buildProcessedEvent(
-                    consumerName,
-                    envelope,
-                    sourceExchange,
-                    routingKey,
-                    ProcessedResult.IGNORED,
-                    reason,
-                    reason.name().toLowerCase()));
+                    consumerName, envelope, sourceExchange, routingKey,
+                    ProcessedResult.IGNORED, reason, reason.name().toLowerCase()));
             return EventOutcome.ignored(reason);
         }
 
@@ -103,13 +83,8 @@ public class AcolhimentoUpdatedUseCase {
         log.warn("Falha funcional nao retentavel. reasonCode={}, eventId={}, correlationId={}, consumer={}",
                 reason, envelope.eventId(), envelope.correlationId(), consumerName);
         saveProcessedEvent(buildProcessedEvent(
-                consumerName,
-                envelope,
-                sourceExchange,
-                routingKey,
-                ProcessedResult.FAILED,
-                reason,
-                reason.name().toLowerCase()));
+                consumerName, envelope, sourceExchange, routingKey,
+                ProcessedResult.FAILED, reason, reason.name().toLowerCase()));
         return EventOutcome.failed(reason);
     }
 
@@ -126,13 +101,8 @@ public class AcolhimentoUpdatedUseCase {
                     "IllegalArgumentException tratada como INBOUND_INVALID_ENUM. eventId={}, correlationId={}, consumer={}",
                     envelope.eventId(), envelope.correlationId(), consumerName, ex);
             saveProcessedEvent(buildProcessedEvent(
-                    consumerName,
-                    envelope,
-                    sourceExchange,
-                    routingKey,
-                    ProcessedResult.FAILED,
-                    ReasonCode.INBOUND_INVALID_ENUM,
-                    detail));
+                    consumerName, envelope, sourceExchange, routingKey,
+                    ProcessedResult.FAILED, ReasonCode.INBOUND_INVALID_ENUM, detail));
             return EventOutcome.failed(ReasonCode.INBOUND_INVALID_ENUM, detail);
         }
 
@@ -141,7 +111,7 @@ public class AcolhimentoUpdatedUseCase {
                 envelope.eventId(), envelope.correlationId(), consumerName,
                 routingKey, envelope.aggregateType(), envelope.aggregateId(), ex);
 
-        String exceptionType = ex != null ? ex.getClass().getSimpleName() : "UnknownException";
+        String exceptionType = ex.getClass().getSimpleName();
         return EventOutcome.failed(ReasonCode.PERSISTENCE_FAILURE,
                 "unexpected_error: " + exceptionType);
     }

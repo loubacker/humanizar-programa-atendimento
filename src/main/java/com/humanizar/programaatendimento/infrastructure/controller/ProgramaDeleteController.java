@@ -32,13 +32,10 @@ public class ProgramaDeleteController {
     public ResponseEntity<ProgramaAtendimentoDeleteResponseDTO> delete(
             @PathVariable UUID patientId,
             @RequestBody InboundEnvelopeDTO<ProgramaDeleteDTO> envelop) {
-        String correlationId = envelop != null && envelop.correlationId() != null
-                ? envelop.correlationId().toString()
+        String correlationId = envelop.correlationIdAsString();
+        String payloadPatientId = envelop.payload() != null && envelop.payload().patientId() != null
+                ? envelop.payload().patientId().toString()
                 : null;
-        String payloadPatientId = envelop != null && envelop.payload() != null
-                && envelop.payload().patientId() != null
-                        ? envelop.payload().patientId().toString()
-                        : null;
 
         log.info("Recebido DELETE /api/v1/programa-atendimento/delete/{}. correlationId={}, payloadPatientId={}, operacao=DELETE",
                 patientId, correlationId, payloadPatientId);

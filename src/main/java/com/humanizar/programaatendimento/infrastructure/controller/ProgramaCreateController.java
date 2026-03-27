@@ -28,10 +28,8 @@ public class ProgramaCreateController {
     @PostMapping("/register")
     public ResponseEntity<ProgramaAtendimentoCreateResponseDTO> register(
             @RequestBody InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope) {
-        String correlationId = envelope != null && envelope.correlationId() != null
-                ? envelope.correlationId().toString()
-                : null;
-        String patientId = envelope != null && envelope.payload() != null && envelope.payload().patientId() != null
+        String correlationId = envelope.correlationIdAsString();
+        String patientId = envelope.payload() != null && envelope.payload().patientId() != null
                 ? envelope.payload().patientId().toString()
                 : null;
 
