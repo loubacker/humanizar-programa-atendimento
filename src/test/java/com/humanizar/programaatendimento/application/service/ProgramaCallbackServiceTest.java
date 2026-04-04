@@ -37,6 +37,8 @@ class ProgramaCallbackServiceTest {
     private FinalizePendingProgramaUseCase finalizePendingProgramaUseCase;
     @Mock
     private SaveProcessedEventUseCase saveProcessedEventUseCase;
+    @Mock
+    private ProgramaDeleteService programaDeleteService;
 
     private ProgramaCallbackService service;
 
@@ -46,7 +48,8 @@ class ProgramaCallbackServiceTest {
                 checkDuplicateEventUseCase,
                 updateCallbackUseCase,
                 finalizePendingProgramaUseCase,
-                saveProcessedEventUseCase);
+                saveProcessedEventUseCase,
+                programaDeleteService);
     }
 
     @Test
@@ -60,6 +63,7 @@ class ProgramaCallbackServiceTest {
         verify(checkDuplicateEventUseCase).execute(consumer, callback.eventId(), callback.correlationId().toString());
         verify(updateCallbackUseCase).execute(callback.eventId(), target, Status.SUCCESS);
         verify(finalizePendingProgramaUseCase).execute(callback.eventId());
+        verify(programaDeleteService).processDeletePosCallback(callback.eventId(), target, callback.status());
         verify(saveProcessedEventUseCase).execute(consumer, callback);
     }
 
@@ -74,6 +78,7 @@ class ProgramaCallbackServiceTest {
         verify(checkDuplicateEventUseCase).execute(consumer, callback.eventId(), callback.correlationId().toString());
         verify(updateCallbackUseCase).execute(callback.eventId(), target, Status.ERROR);
         verify(finalizePendingProgramaUseCase).execute(callback.eventId());
+        verify(programaDeleteService).processDeletePosCallback(callback.eventId(), target, callback.status());
         verify(saveProcessedEventUseCase).execute(consumer, callback);
     }
 
@@ -92,6 +97,7 @@ class ProgramaCallbackServiceTest {
 
         verify(updateCallbackUseCase, never()).execute(any(), any(), any());
         verify(finalizePendingProgramaUseCase, never()).execute(any());
+        verify(programaDeleteService, never()).processDeletePosCallback(any(), any(), any());
         verify(saveProcessedEventUseCase, never()).execute(any(), any());
     }
 

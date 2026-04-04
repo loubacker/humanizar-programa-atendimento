@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.humanizar.programaatendimento.domain.model.enums.OperationType;
+import com.humanizar.programaatendimento.domain.model.enums.Status;
 import com.humanizar.programaatendimento.infrastructure.persistence.entity.pending.PendingProgramaEntity;
 
 @Repository
@@ -19,4 +21,10 @@ public interface PendingProgramaRepository extends JpaRepository<PendingPrograma
     List<PendingProgramaEntity> findByPatientIdOrderByCreatedAtDesc(UUID patientId);
 
     Page<PendingProgramaEntity> findByPatientId(UUID patientId, Pageable pageable);
+
+    boolean existsByPatientIdAndOperationTypeAndStatus(UUID patientId, OperationType operationType, Status status);
+
+    default boolean checkDeleteStatusByPatientId(UUID patientId, OperationType operationType, Status status) {
+        return existsByPatientIdAndOperationTypeAndStatus(patientId, operationType, status);
+    }
 }

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.humanizar.programaatendimento.domain.model.enums.OperationType;
+import com.humanizar.programaatendimento.domain.model.enums.Status;
 import com.humanizar.programaatendimento.domain.model.pending.PendingProgramaAtendimento;
 import com.humanizar.programaatendimento.domain.port.pending.PendingProgramaAtendimentoPort;
 import com.humanizar.programaatendimento.infrastructure.persistence.entity.pending.PendingProgramaEntity;
@@ -53,6 +55,11 @@ public class PendingProgramaAtendimentoAdapter implements PendingProgramaAtendim
     public Page<PendingProgramaAtendimento> findByPatientId(UUID patientId, Pageable pageable) {
         return pendingProgramaRepository.findByPatientId(patientId, pageable)
                 .map(this::toDomain);
+    }
+
+    @Override
+    public boolean checkDeleteStatusByPatientId(UUID patientId, OperationType operationType, Status status) {
+        return pendingProgramaRepository.checkDeleteStatusByPatientId(patientId, operationType, status);
     }
 
     private PendingProgramaAtendimento toDomain(PendingProgramaEntity entity) {

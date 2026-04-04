@@ -17,6 +17,7 @@ public enum ReasonCode {
     INBOUND_CONTEXT_INCONSISTENT(400, "Inconsistência entre envelop.payload e payload.", false),
     INBOUND_PATIENT_MISMATCH(400, "patientId do núcleo diverge do patientId do programa.", false),
     DUPLICATE_PATIENT(409, "Programa já existe para o patientId informado.", false),
+    DELETE_IN_PROGRESS(409, "Ja existe operacao DELETE pendente para o patientId informado.", false),
     DUPLICATE_PROGRAMA_SEMANA_DIA(409, "Dia da semana duplicado em programasSemana.", false),
     DUPLICATE_AT_ESCOLA_SEMANA_DIA(409, "Dia da semana duplicado em atEscolaSemana.", false),
     DUPLICATE_NUCLEO_RESPONSAVEL(409, "Responsável duplicado para o NucleoPatient.", false),
@@ -49,3 +50,4 @@ public enum ReasonCode {
         return retryable;
     }
 }
+

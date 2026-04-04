@@ -48,9 +48,15 @@ public class SavePendingProgramaUseCase {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void markAsError(UUID eventId) {
+        markAsError(eventId, null);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void markAsError(UUID eventId, String errorMessage) {
         try {
             pendingPort.findByEventId(eventId).ifPresent(pending -> {
                 pending.setStatus(Status.ERROR);
+                pending.setErrorMessage(errorMessage);
                 pendingPort.save(pending);
             });
         } catch (Exception ex) {

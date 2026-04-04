@@ -22,16 +22,19 @@ public class ProgramaCallbackService {
     private final UpdateCallbackUseCase updatePendingTargetStatusFromCallbackUseCase;
     private final FinalizePendingProgramaUseCase finalizePendingProgramaUseCase;
     private final SaveProcessedEventUseCase saveProcessedEventUseCase;
+    private final ProgramaDeleteService programaDeleteService;
 
     public ProgramaCallbackService(
             CheckDuplicateEventUseCase checkDuplicateEventUseCase,
             UpdateCallbackUseCase updatePendingTargetStatusFromCallbackUseCase,
             FinalizePendingProgramaUseCase finalizePendingProgramaUseCase,
-            SaveProcessedEventUseCase saveProcessedEventUseCase) {
+            SaveProcessedEventUseCase saveProcessedEventUseCase,
+            ProgramaDeleteService programaDeleteService) {
         this.checkDuplicateEventUseCase = checkDuplicateEventUseCase;
         this.updatePendingTargetStatusFromCallbackUseCase = updatePendingTargetStatusFromCallbackUseCase;
         this.finalizePendingProgramaUseCase = finalizePendingProgramaUseCase;
         this.saveProcessedEventUseCase = saveProcessedEventUseCase;
+        this.programaDeleteService = programaDeleteService;
     }
 
     public void processCallback(String consumerName, String targetService, CallbackDTO callback) {
@@ -53,6 +56,7 @@ public class ProgramaCallbackService {
                 targetService,
                 resolveTargetStatus(callback.status()));
         finalizePendingProgramaUseCase.execute(callback.eventId());
+        programaDeleteService.processDeletePosCallback(callback.eventId(), targetService, callback.status());
 
         saveProcessedEventUseCase.execute(consumerName, callback);
     }
@@ -69,7 +73,7 @@ public class ProgramaCallbackService {
 
     private void validateCallback(CallbackDTO callback) {
         if (callback == null) {
-            throw new ProgramaAtendimentoException(ReasonCode.VALIDATION_ERROR, null, "callback e obrigatorio");
+            throw new ProgramaAtendimentoException(ReasonCode.VALIDATION_ERROR, null, "callback é obrigatório");
         }
 
         String correlationId = callback.correlationId() != null ? callback.correlationId().toString() : null;
@@ -78,14 +82,14 @@ public class ProgramaCallbackService {
             throw new ProgramaAtendimentoException(
                     ReasonCode.VALIDATION_ERROR,
                     correlationId,
-                    "callback.eventId e obrigatorio");
+                    "callback.eventId é obrigatório");
         }
 
         if (callback.status() == null || callback.status().isBlank()) {
             throw new ProgramaAtendimentoException(
                     ReasonCode.VALIDATION_ERROR,
                     correlationId,
-                    "callback.status e obrigatorio");
+                    "callback.status é obrigatório");
         }
     }
 }

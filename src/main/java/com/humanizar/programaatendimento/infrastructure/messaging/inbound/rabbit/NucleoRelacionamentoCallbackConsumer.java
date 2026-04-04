@@ -71,12 +71,19 @@ public class NucleoRelacionamentoCallbackConsumer {
                 rabbitAcknowledgementConfig.ack(channel, deliveryTag, context);
                 return;
             }
+            log.error(
+                    "Falha ao processar callback do nucleo-relacionamento. reasonCode={}, retryable={}, {}",
+                    ex.getReasonCode(),
+                    ex.isRetryable(),
+                    context,
+                    ex);
             if (ex.isRetryable()) {
                 rabbitAcknowledgementConfig.nackRetry(channel, deliveryTag, context);
                 return;
             }
             rabbitAcknowledgementConfig.nackDeadLetter(channel, deliveryTag, context);
         } catch (RuntimeException ex) {
+            log.error("Falha inesperada ao processar callback do nucleo-relacionamento. {}", context, ex);
             rabbitAcknowledgementConfig.nackRetry(channel, deliveryTag, context);
         }
     }
