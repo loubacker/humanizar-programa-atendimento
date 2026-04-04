@@ -13,5 +13,7 @@ public interface AtEscolaSemanaPort {
 
     List<AtEscolaSemana> findByProgramaEscolaId(UUID programaEscolaId);
 
+    void deleteById(UUID id);
+
     void deleteByProgramaEscolaId(UUID programaEscolaId);
 }

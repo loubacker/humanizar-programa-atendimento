@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,12 @@ public class PendingProgramaAtendimentoAdapter implements PendingProgramaAtendim
         return pendingProgramaRepository.findByPatientIdOrderByCreatedAtDesc(patientId).stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Page<PendingProgramaAtendimento> findByPatientId(UUID patientId, Pageable pageable) {
+        return pendingProgramaRepository.findByPatientId(patientId, pageable)
+                .map(this::toDomain);
     }
 
     private PendingProgramaAtendimento toDomain(PendingProgramaEntity entity) {

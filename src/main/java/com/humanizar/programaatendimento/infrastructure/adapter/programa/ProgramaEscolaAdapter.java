@@ -45,6 +45,11 @@ public class ProgramaEscolaAdapter implements ProgramaEscolaPort {
     }
 
     @Override
+    public void deleteById(UUID id) {
+        programaEscolaRepository.deleteById(id);
+    }
+
+    @Override
     public void deleteByProgramaAtendimentoId(UUID programaAtendimentoId) {
         programaEscolaRepository.deleteByProgramaAtendimentoId(programaAtendimentoId);
     }

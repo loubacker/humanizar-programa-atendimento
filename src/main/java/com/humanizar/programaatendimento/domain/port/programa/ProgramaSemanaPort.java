@@ -13,5 +13,7 @@ public interface ProgramaSemanaPort {
 
     List<ProgramaSemana> findByProgramaAtendimentoId(UUID programaAtendimentoId);
 
+    void deleteById(UUID id);
+
     void deleteByProgramaAtendimentoId(UUID programaAtendimentoId);
 }

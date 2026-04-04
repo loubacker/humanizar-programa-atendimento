@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.humanizar.programaatendimento.application.inbound.dto.InboundContextDTO;
+import com.humanizar.programaatendimento.application.inbound.dto.InboundDeleteContextDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.InboundEnvelopeDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.messaging.AcolhimentoDeletedDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.messaging.AcolhimentoNucleoPatientDTO;
@@ -25,10 +27,18 @@ import com.humanizar.programaatendimento.application.inbound.dto.programa.Progra
 import com.humanizar.programaatendimento.application.inbound.dto.programa.ProgramaEscolaDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.programa.ProgramaSemanaDTO;
 import com.humanizar.programaatendimento.application.inbound.dto.programa.ProgramaSemanaScheduleDTO;
+import com.humanizar.programaatendimento.application.outbound.dto.central.PendingCentralListDTO;
+import com.humanizar.programaatendimento.application.outbound.dto.central.PendingCentralPageDTO;
+import com.humanizar.programaatendimento.application.outbound.dto.central.PendingCentralSnapshotDTO;
+import com.humanizar.programaatendimento.application.outbound.dto.central.PendingTargetStatusDTO;
 import com.humanizar.programaatendimento.application.outbound.dto.CallbackDTO;
 import com.humanizar.programaatendimento.application.outbound.dto.OutboundEnvelopeDTO;
 import com.humanizar.programaatendimento.application.outbound.dto.ProgramaCommandDTO;
 import com.humanizar.programaatendimento.application.outbound.dto.ProgramaDeletedCommandDTO;
+import com.humanizar.programaatendimento.infrastructure.controller.dto.ProgramaAtendimentoCreateResponseDTO;
+import com.humanizar.programaatendimento.infrastructure.controller.dto.ProgramaAtendimentoDeleteResponseDTO;
+import com.humanizar.programaatendimento.infrastructure.controller.dto.ProgramaAtendimentoErrorResponseDTO;
+import com.humanizar.programaatendimento.infrastructure.controller.dto.ProgramaAtendimentoUpdateResponseDTO;
 
 @Configuration
 @ImportRuntimeHints(ObjectMapperConfig.ObjectMapperRuntimeHints.class)
@@ -47,6 +57,8 @@ public class ObjectMapperConfig {
 
         @Override
         public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+            registerJsonBinding(hints, InboundContextDTO.class);
+            registerJsonBinding(hints, InboundDeleteContextDTO.class);
             registerJsonBinding(hints, InboundEnvelopeDTO.class);
             registerJsonBinding(hints, AcolhimentoDeletedDTO.class);
             registerJsonBinding(hints, AcolhimentoNucleoPatientDTO.class);
@@ -65,6 +77,14 @@ public class ObjectMapperConfig {
             registerJsonBinding(hints, OutboundEnvelopeDTO.class);
             registerJsonBinding(hints, ProgramaCommandDTO.class);
             registerJsonBinding(hints, ProgramaDeletedCommandDTO.class);
+            registerJsonBinding(hints, PendingCentralListDTO.class);
+            registerJsonBinding(hints, PendingCentralPageDTO.class);
+            registerJsonBinding(hints, PendingCentralSnapshotDTO.class);
+            registerJsonBinding(hints, PendingTargetStatusDTO.class);
+            registerJsonBinding(hints, ProgramaAtendimentoCreateResponseDTO.class);
+            registerJsonBinding(hints, ProgramaAtendimentoDeleteResponseDTO.class);
+            registerJsonBinding(hints, ProgramaAtendimentoErrorResponseDTO.class);
+            registerJsonBinding(hints, ProgramaAtendimentoUpdateResponseDTO.class);
         }
 
         private void registerJsonBinding(RuntimeHints hints, Class<?> type) {

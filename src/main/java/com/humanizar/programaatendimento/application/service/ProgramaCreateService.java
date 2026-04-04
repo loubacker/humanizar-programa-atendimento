@@ -97,10 +97,10 @@ public class ProgramaCreateService {
         return buildProgramaTemplateUsecase.executeWithPendingGuard(
                 pending.getEventId(), correlationIdText, true,
                 () -> {
-                    UUID programaId = UUID.randomUUID();
-                    ProgramaAtendimento programa = buildProgramaAtendimentoUseCase.execute(
-                            programaId, patientId, payload, correlationIdText);
-                    programaAtendimentoPort.save(programa);
+                    ProgramaAtendimento programa = buildProgramaAtendimentoUseCase.buildForCreate(
+                            patientId, payload, correlationIdText);
+                    ProgramaAtendimento savedPrograma = programaAtendimentoPort.save(programa);
+                    UUID programaId = savedPrograma.getId();
 
                     saveProgramaTreeUseCase.saveProgramasSemana(programaId, payload.programasSemana(),
                             correlationIdText);

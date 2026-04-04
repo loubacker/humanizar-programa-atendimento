@@ -45,6 +45,11 @@ public class NucleoPatientResponsavelAdapter implements NucleoPatientResponsavel
     }
 
     @Override
+    public void deleteById(UUID id) {
+        nucleoPatientResponsavelRepository.deleteById(id);
+    }
+
+    @Override
     public void deleteByNucleoPatientId(UUID nucleoPatientId) {
         nucleoPatientResponsavelRepository.deleteByNucleoPatientId(nucleoPatientId);
     }

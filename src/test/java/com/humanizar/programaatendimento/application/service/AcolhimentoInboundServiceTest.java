@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +25,6 @@ import com.humanizar.programaatendimento.application.inbound.dto.nucleo.NucleoRe
 import com.humanizar.programaatendimento.domain.exception.ProgramaAtendimentoException;
 import com.humanizar.programaatendimento.domain.model.enums.ReasonCode;
 import com.humanizar.programaatendimento.domain.model.enums.ResponsavelRole;
-import com.humanizar.programaatendimento.domain.model.nucleo.AbordagemPatient;
 import com.humanizar.programaatendimento.domain.model.nucleo.NucleoPatient;
 import com.humanizar.programaatendimento.domain.model.nucleo.NucleoPatientResponsavel;
 import com.humanizar.programaatendimento.domain.port.nucleo.AbordagemPatientPort;
@@ -83,20 +83,89 @@ class AcolhimentoInboundServiceTest {
     }
 
     @Test
-    void shouldReconcileSnapshotDeletingAndCreatingNucleos() {
+    void shouldUpdateExistingResponsavelRoleWithoutDeletingEverything() {
         UUID patientId = UUID.randomUUID();
-        UUID currentNucleoPatientId = UUID.randomUUID();
-        UUID currentNucleoId = UUID.randomUUID();
+        UUID nucleoPatientId = UUID.randomUUID();
+        UUID nucleoId = UUID.randomUUID();
+        UUID responsavelId = UUID.randomUUID();
+        UUID responsavelEntityId = UUID.randomUUID();
+
+        when(nucleoPatientPort.findAllByPatientId(patientId)).thenReturn(List.of(
+                NucleoPatient.builder()
+                        .id(nucleoPatientId)
+                        .patientId(patientId)
+                        .nucleoId(nucleoId)
+                        .build()));
+        when(responsavelPort.findByNucleoPatientId(nucleoPatientId)).thenReturn(List.of(
+                new NucleoPatientResponsavel(
+                        responsavelEntityId,
+                        nucleoPatientId,
+                        responsavelId,
+                        ResponsavelRole.COORDENADOR)));
+
+        service.applyNucleoPatientSnapshot(
+                patientId,
+                List.of(new AcolhimentoNucleoPatientDTO(
+                        nucleoPatientId,
+                        nucleoId,
+                        List.of(new NucleoResponsavelDTO(responsavelId, "ADMINISTRADOR")))),
+                UUID.randomUUID());
+
+        verify(responsavelPort).save(new NucleoPatientResponsavel(
+                responsavelEntityId,
+                nucleoPatientId,
+                responsavelId,
+                ResponsavelRole.ADMINISTRADOR));
+        verify(responsavelPort, never()).deleteByNucleoPatientId(nucleoPatientId);
+        verify(responsavelPort, never()).saveAll(any());
+    }
+
+    @Test
+    void shouldDeleteRemovedResponsavelById() {
+        UUID patientId = UUID.randomUUID();
+        UUID nucleoPatientId = UUID.randomUUID();
+        UUID nucleoId = UUID.randomUUID();
+        UUID removedResponsavelEntityId = UUID.randomUUID();
+        UUID removedResponsavelId = UUID.randomUUID();
+
+        when(nucleoPatientPort.findAllByPatientId(patientId)).thenReturn(List.of(
+                NucleoPatient.builder()
+                        .id(nucleoPatientId)
+                        .patientId(patientId)
+                        .nucleoId(nucleoId)
+                        .build()));
+        when(responsavelPort.findByNucleoPatientId(nucleoPatientId)).thenReturn(List.of(
+                new NucleoPatientResponsavel(
+                        removedResponsavelEntityId,
+                        nucleoPatientId,
+                        removedResponsavelId,
+                        ResponsavelRole.COORDENADOR)));
+
+        service.applyNucleoPatientSnapshot(
+                patientId,
+                List.of(new AcolhimentoNucleoPatientDTO(
+                        nucleoPatientId,
+                        nucleoId,
+                        List.of())),
+                UUID.randomUUID());
+
+        verify(responsavelPort).deleteById(removedResponsavelEntityId);
+    }
+
+    @Test
+    void shouldDeleteRemovedNucleoCleaningAbordagensAndResponsaveis() {
+        UUID patientId = UUID.randomUUID();
+        UUID nucleoPatientId = UUID.randomUUID();
+        UUID nucleoId = UUID.randomUUID();
         UUID incomingNucleoPatientId = UUID.randomUUID();
         UUID incomingNucleoId = UUID.randomUUID();
 
         when(nucleoPatientPort.findAllByPatientId(patientId)).thenReturn(List.of(
                 NucleoPatient.builder()
-                        .id(currentNucleoPatientId)
+                        .id(nucleoPatientId)
                         .patientId(patientId)
-                        .nucleoId(currentNucleoId)
+                        .nucleoId(nucleoId)
                         .build()));
-        when(abordagemPatientPort.findByNucleoPatientId(currentNucleoPatientId)).thenReturn(List.of());
         when(nucleoPatientPort.existsById(incomingNucleoPatientId)).thenReturn(false);
         when(nucleoPatientPort.findByPatientIdAndNucleoId(patientId, incomingNucleoId)).thenReturn(Optional.empty());
         when(nucleoPatientPort.save(any())).thenReturn(NucleoPatient.builder()
@@ -113,34 +182,36 @@ class AcolhimentoInboundServiceTest {
                         List.of(new NucleoResponsavelDTO(UUID.randomUUID(), "COORDENADOR")))),
                 UUID.randomUUID());
 
-        verify(nucleoPatientPort).deleteByPatientIdAndNucleoId(patientId, currentNucleoId);
-        verify(nucleoPatientPort).save(any());
-        verify(responsavelPort).saveAll(any());
+        verify(abordagemPatientPort).deleteByNucleoPatientId(nucleoPatientId);
+        verify(responsavelPort).deleteByNucleoPatientId(nucleoPatientId);
+        verify(nucleoPatientPort).deleteByPatientIdAndNucleoId(patientId, nucleoId);
     }
 
     @Test
-    void shouldFailDeleteWhenNucleoHasAbordagem() {
+    void shouldFailWhenIncomingNucleoIdDivergesFromExistingRecord() {
         UUID patientId = UUID.randomUUID();
         UUID nucleoPatientId = UUID.randomUUID();
-        UUID nucleoId = UUID.randomUUID();
+        UUID existingNucleoId = UUID.randomUUID();
+        UUID incomingNucleoId = UUID.randomUUID();
 
         when(nucleoPatientPort.findAllByPatientId(patientId)).thenReturn(List.of(
                 NucleoPatient.builder()
                         .id(nucleoPatientId)
                         .patientId(patientId)
-                        .nucleoId(nucleoId)
+                        .nucleoId(existingNucleoId)
                         .build()));
-        when(abordagemPatientPort.findByNucleoPatientId(nucleoPatientId)).thenReturn(List.of(
-                new AbordagemPatient(UUID.randomUUID(), nucleoPatientId, UUID.randomUUID())));
 
         ProgramaAtendimentoException ex = assertThrows(
                 ProgramaAtendimentoException.class,
-                () -> service.deleteAllNucleosByPatientId(
+                () -> service.applyNucleoPatientSnapshot(
                         patientId,
+                        List.of(new AcolhimentoNucleoPatientDTO(
+                                nucleoPatientId,
+                                incomingNucleoId,
+                                List.of(new NucleoResponsavelDTO(UUID.randomUUID(), "COORDENADOR")))),
                         UUID.randomUUID()));
 
-        assertEquals(ReasonCode.HAS_ABORDAGEM, ex.getReasonCode());
-        verify(nucleoPatientPort).findAllByPatientId(patientId);
-        verify(abordagemPatientPort).findByNucleoPatientId(eq(nucleoPatientId));
+        assertEquals(ReasonCode.VALIDATION_ERROR, ex.getReasonCode());
+        verify(responsavelPort, never()).save(any());
     }
 }

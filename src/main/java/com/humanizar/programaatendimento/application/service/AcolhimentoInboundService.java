@@ -154,10 +154,7 @@ public class AcolhimentoInboundService {
     }
 
     private void deleteNucleo(NucleoPatient nucleo, UUID patientId, String corrId) {
-        if (!abordagemPatientPort.findByNucleoPatientId(nucleo.getId()).isEmpty()) {
-            throw new ProgramaAtendimentoException(ReasonCode.HAS_ABORDAGEM, corrId);
-        }
-
+        abordagemPatientPort.deleteByNucleoPatientId(nucleo.getId());
         responsavelPort.deleteByNucleoPatientId(nucleo.getId());
         nucleoPatientPort.deleteByPatientIdAndNucleoId(patientId, nucleo.getNucleoId());
     }
@@ -168,35 +165,40 @@ public class AcolhimentoInboundService {
         List<NucleoPatientResponsavel> currentResponsaveis = responsavelPort
                 .findByNucleoPatientId(existing.getId());
 
-        Set<UUID> currentIds = currentResponsaveis.stream()
-                .map(NucleoPatientResponsavel::getResponsavelId)
-                .collect(Collectors.toSet());
+        Map<UUID, NucleoPatientResponsavel> currentByResponsavelId = currentResponsaveis.stream()
+                .collect(Collectors.toMap(NucleoPatientResponsavel::getResponsavelId, r -> r));
         Set<UUID> incomingIds = incomingResponsaveis.stream()
                 .map(NucleoResponsavelDTO::responsavelId)
                 .collect(Collectors.toSet());
 
         String corrId = correlationId != null ? correlationId.toString() : null;
 
-        List<NucleoPatientResponsavel> added = incomingResponsaveis.stream()
-                .filter(responsavelCommand -> !currentIds.contains(responsavelCommand.responsavelId()))
-                .map(responsavelCommand -> new NucleoPatientResponsavel(
-                        null, existing.getId(), responsavelCommand.responsavelId(),
-                        parseRole(responsavelCommand.role(), corrId)))
-                .toList();
+        for (NucleoResponsavelDTO incomingResponsavel : incomingResponsaveis) {
+            NucleoPatientResponsavel current = currentByResponsavelId.get(incomingResponsavel.responsavelId());
+            ResponsavelRole incomingRole = parseRole(incomingResponsavel.role(), corrId);
 
-        List<NucleoPatientResponsavel> removed = currentResponsaveis.stream()
-                .filter(r -> !incomingIds.contains(r.getResponsavelId()))
-                .toList();
+            if (current == null) {
+                responsavelPort.save(new NucleoPatientResponsavel(
+                        null,
+                        existing.getId(),
+                        incomingResponsavel.responsavelId(),
+                        incomingRole));
+                continue;
+            }
 
-        if (!added.isEmpty() || !removed.isEmpty()) {
-            // Regrava o estado final para garantir consistencia quando houver add/remove no
-            // mesmo update.
-            responsavelPort.deleteByNucleoPatientId(existing.getId());
-            List<NucleoPatientResponsavel> finalState = toResponsavelDomain(
-                    existing.getId(),
-                    incomingResponsaveis,
-                    corrId);
-            responsavelPort.saveAll(finalState);
+            if (current.getRole() != incomingRole) {
+                responsavelPort.save(new NucleoPatientResponsavel(
+                        current.getId(),
+                        current.getNucleoPatientId(),
+                        current.getResponsavelId(),
+                        incomingRole));
+            }
+        }
+
+        for (NucleoPatientResponsavel current : currentResponsaveis) {
+            if (!incomingIds.contains(current.getResponsavelId())) {
+                responsavelPort.deleteById(current.getId());
+            }
         }
     }
 

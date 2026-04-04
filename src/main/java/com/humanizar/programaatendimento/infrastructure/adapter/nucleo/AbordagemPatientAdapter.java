@@ -45,6 +45,11 @@ public class AbordagemPatientAdapter implements AbordagemPatientPort {
     }
 
     @Override
+    public void deleteById(UUID id) {
+        abordagemPatientRepository.deleteById(id);
+    }
+
+    @Override
     public void deleteByNucleoPatientId(UUID nucleoPatientId) {
         abordagemPatientRepository.deleteByNucleoPatientId(nucleoPatientId);
     }

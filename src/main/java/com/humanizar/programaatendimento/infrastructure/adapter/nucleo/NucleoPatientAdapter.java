@@ -7,28 +7,18 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.humanizar.programaatendimento.domain.exception.ProgramaAtendimentoException;
-import com.humanizar.programaatendimento.domain.model.enums.ReasonCode;
 import com.humanizar.programaatendimento.domain.model.nucleo.NucleoPatient;
 import com.humanizar.programaatendimento.domain.port.nucleo.NucleoPatientPort;
 import com.humanizar.programaatendimento.infrastructure.persistence.entity.nucleo.NucleoPatientEntity;
-import com.humanizar.programaatendimento.infrastructure.persistence.repository.nucleo.AbordagemPatientRepository;
 import com.humanizar.programaatendimento.infrastructure.persistence.repository.nucleo.NucleoPatientRepository;
-import com.humanizar.programaatendimento.infrastructure.persistence.repository.nucleo.NucleoPatientResponsavelRepository;
 
 @Component
 public class NucleoPatientAdapter implements NucleoPatientPort {
 
     private final NucleoPatientRepository nucleoPatientRepository;
-    private final AbordagemPatientRepository abordagemPatientRepository;
-    private final NucleoPatientResponsavelRepository nucleoPatientResponsavelRepository;
 
-    public NucleoPatientAdapter(NucleoPatientRepository nucleoPatientRepository,
-            AbordagemPatientRepository abordagemPatientRepository,
-            NucleoPatientResponsavelRepository nucleoPatientResponsavelRepository) {
+    public NucleoPatientAdapter(NucleoPatientRepository nucleoPatientRepository) {
         this.nucleoPatientRepository = nucleoPatientRepository;
-        this.abordagemPatientRepository = abordagemPatientRepository;
-        this.nucleoPatientResponsavelRepository = nucleoPatientResponsavelRepository;
     }
 
     @Override
@@ -58,14 +48,7 @@ public class NucleoPatientAdapter implements NucleoPatientPort {
 
     @Override
     public void deleteByPatientIdAndNucleoId(UUID patientId, UUID nucleoId) {
-        nucleoPatientRepository.findByPatientIdAndNucleoId(patientId, nucleoId)
-                .ifPresent(entity -> {
-                    if (!abordagemPatientRepository.findByNucleoPatientId(entity.getId()).isEmpty()) {
-                        throw new ProgramaAtendimentoException(ReasonCode.HAS_ABORDAGEM, null);
-                    }
-                    nucleoPatientResponsavelRepository.deleteByNucleoPatientId(entity.getId());
-                    nucleoPatientRepository.deleteByPatientIdAndNucleoId(patientId, nucleoId);
-                });
+        nucleoPatientRepository.deleteByPatientIdAndNucleoId(patientId, nucleoId);
     }
 
     private NucleoPatient toDomain(NucleoPatientEntity entity) {

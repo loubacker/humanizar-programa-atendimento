@@ -17,8 +17,6 @@ import com.humanizar.programaatendimento.application.outbound.dto.ProgramaComman
 import com.humanizar.programaatendimento.application.usecase.outbox.UpdateOutboxCommandUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaAtendimentoUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
@@ -39,9 +37,7 @@ public class ProgramaUpdateService {
     private final ProgramaAtendimentoPort programaAtendimentoPort;
     private final AcolhimentoInboundService acolhimentoInboundService;
     private final SaveProgramaTreeUseCase saveProgramaTreeUseCase;
-    private final DeleteProgramaTreeUseCase deleteProgramaTreeUseCase;
     private final SaveAbordagensUseCase saveAbordagensUseCase;
-    private final DeleteAbordagensUseCase deleteAbordagensUseCase;
     private final BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase;
     private final BuildProgramaCommandsUseCase buildProgramaCommandsUseCase;
     private final SavePendingProgramaUseCase savePendingProgramaUseCase;
@@ -54,9 +50,7 @@ public class ProgramaUpdateService {
             ProgramaAtendimentoPort programaAtendimentoPort,
             AcolhimentoInboundService acolhimentoInboundService,
             SaveProgramaTreeUseCase saveProgramaTreeUseCase,
-            DeleteProgramaTreeUseCase deleteProgramaTreeUseCase,
             SaveAbordagensUseCase saveAbordagensUseCase,
-            DeleteAbordagensUseCase deleteAbordagensUseCase,
             BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase,
             BuildProgramaCommandsUseCase buildProgramaCommandsUseCase,
             SavePendingProgramaUseCase savePendingProgramaUseCase,
@@ -67,9 +61,7 @@ public class ProgramaUpdateService {
         this.programaAtendimentoPort = programaAtendimentoPort;
         this.acolhimentoInboundService = acolhimentoInboundService;
         this.saveProgramaTreeUseCase = saveProgramaTreeUseCase;
-        this.deleteProgramaTreeUseCase = deleteProgramaTreeUseCase;
         this.saveAbordagensUseCase = saveAbordagensUseCase;
-        this.deleteAbordagensUseCase = deleteAbordagensUseCase;
         this.buildProgramaAtendimentoUseCase = buildProgramaAtendimentoUseCase;
         this.buildProgramaCommandsUseCase = buildProgramaCommandsUseCase;
         this.savePendingProgramaUseCase = savePendingProgramaUseCase;
@@ -103,9 +95,7 @@ public class ProgramaUpdateService {
         return buildProgramaTemplateUsecase.executeWithPendingGuard(
                 pending.getEventId(), correlationIdText, false,
                 () -> {
-                    deleteProgramaTreeUseCase.execute(programaId);
-
-                    ProgramaAtendimento updated = buildProgramaAtendimentoUseCase.execute(
+                    ProgramaAtendimento updated = buildProgramaAtendimentoUseCase.buildForUpdate(
                             programaId, patientId, payload, correlationIdText);
                     updated.setCreatedAt(existing.getCreatedAt());
                     programaAtendimentoPort.save(updated);
@@ -114,8 +104,6 @@ public class ProgramaUpdateService {
                             correlationIdText);
                     saveProgramaTreeUseCase.saveProgramasEscola(programaId, payload.programasEscola(),
                             correlationIdText);
-
-                    deleteAbordagensUseCase.execute(patientId);
 
                     List<AcolhimentoNucleoPatientDTO> nucleoCommands = toNucleoCommands(payload.nucleoPatient());
                     acolhimentoInboundService.applyNucleoPatientSnapshot(

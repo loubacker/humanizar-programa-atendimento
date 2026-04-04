@@ -109,6 +109,7 @@ class ProgramaCreateServiceTest {
         UUID nucleoPatientId = UUID.randomUUID();
         UUID nucleoId = UUID.randomUUID();
         UUID pendingEventId = UUID.randomUUID();
+        UUID persistedProgramaId = UUID.randomUUID();
 
         ProgramaAtendimentoDTO payload = createPayload(patientId, nucleoPatientId, nucleoId);
         InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope = createEnvelope(correlationId, payload);
@@ -125,15 +126,21 @@ class ProgramaCreateServiceTest {
                 correlationId, patientId, null, OperationType.CREATE, "{\"ok\":true}"))
                 .thenReturn(pending);
         when(programaAtendimentoPort.findByPatientId(patientId)).thenReturn(Optional.empty());
-        when(buildProgramaAtendimentoUseCase.execute(
-                any(UUID.class), eq(patientId), eq(payload), eq(correlationId.toString())))
-                .thenAnswer(inv -> ProgramaAtendimento.builder()
-                        .id(inv.getArgument(0))
+        when(buildProgramaAtendimentoUseCase.buildForCreate(
+                eq(patientId), eq(payload), eq(correlationId.toString())))
+                .thenReturn(ProgramaAtendimento.builder()
+                        .id(null)
                         .patientId(patientId)
                         .dataInicio(LocalDateTime.now())
                         .cadastroApp(SimNao.SIM)
                         .atEscolar(SimNao.NAO)
                         .build());
+        when(programaAtendimentoPort.save(any(ProgramaAtendimento.class)))
+                .thenAnswer(inv -> {
+                    ProgramaAtendimento programa = inv.getArgument(0);
+                    programa.setId(persistedProgramaId);
+                    return programa;
+                });
         when(nucleoPatientPort.existsById(nucleoPatientId)).thenReturn(false);
         when(buildProgramaCommandsUseCase.execute(payload.nucleoPatient())).thenReturn(commandPayload);
 
@@ -159,9 +166,9 @@ class ProgramaCreateServiceTest {
                 eq(true),
                 ArgumentMatchers.<Callable<ProgramaAtendimentoCreateResponseDTO>>any());
         verify(programaAtendimentoPort).save(any(ProgramaAtendimento.class));
-        verify(saveProgramaTreeUseCase).saveProgramasSemana(any(UUID.class), eq(payload.programasSemana()),
+        verify(saveProgramaTreeUseCase).saveProgramasSemana(eq(persistedProgramaId), eq(payload.programasSemana()),
                 eq(correlationId.toString()));
-        verify(saveProgramaTreeUseCase).saveProgramasEscola(any(UUID.class), eq(payload.programasEscola()),
+        verify(saveProgramaTreeUseCase).saveProgramasEscola(eq(persistedProgramaId), eq(payload.programasEscola()),
                 eq(correlationId.toString()));
         verify(acolhimentoInboundService).createNucleoPatient(
                 eq(nucleoPatientId),
@@ -176,7 +183,70 @@ class ProgramaCreateServiceTest {
                 aggregateIdCaptor.capture(),
                 eq(commandPayload));
         assertNotNull(aggregateIdCaptor.getValue());
-        assertEquals(nucleoPatientId, commandPayload.getFirst().nucleoPatientId());
+        assertEquals(persistedProgramaId, aggregateIdCaptor.getValue());
+    }
+
+    @Test
+    void shouldReuseExistingNucleoPatientAndStillSaveAbordagens() throws Exception {
+        UUID correlationId = UUID.randomUUID();
+        UUID patientId = UUID.randomUUID();
+        UUID nucleoPatientId = UUID.randomUUID();
+        UUID nucleoId = UUID.randomUUID();
+        UUID pendingEventId = UUID.randomUUID();
+        UUID persistedProgramaId = UUID.randomUUID();
+
+        ProgramaAtendimentoDTO payload = createPayload(patientId, nucleoPatientId, nucleoId);
+        InboundEnvelopeDTO<ProgramaAtendimentoDTO> envelope = createEnvelope(correlationId, payload);
+        InboundContextDTO<ProgramaAtendimentoDTO> context = new InboundContextDTO<>(envelope, payload);
+        PendingProgramaAtendimento pending = PendingProgramaAtendimento.builder().eventId(pendingEventId).build();
+        List<ProgramaCommandDTO> commandPayload = List
+                .of(new ProgramaCommandDTO(nucleoPatientId, List.of(UUID.randomUUID())));
+
+        when(inboundContextMapper.fromEnvelop(envelope)).thenReturn(context);
+        when(inboundProgramaAtendimentoMapper.toCreatePayload(payload, correlationId.toString())).thenReturn(payload);
+        when(savePendingProgramaUseCase.serializePayload(payload, correlationId.toString()))
+                .thenReturn("{\"ok\":true}");
+        when(savePendingProgramaUseCase.save(
+                correlationId, patientId, null, OperationType.CREATE, "{\"ok\":true}"))
+                .thenReturn(pending);
+        when(programaAtendimentoPort.findByPatientId(patientId)).thenReturn(Optional.empty());
+        when(buildProgramaAtendimentoUseCase.buildForCreate(
+                eq(patientId), eq(payload), eq(correlationId.toString())))
+                .thenReturn(ProgramaAtendimento.builder()
+                        .id(null)
+                        .patientId(patientId)
+                        .dataInicio(LocalDateTime.now())
+                        .cadastroApp(SimNao.SIM)
+                        .atEscolar(SimNao.NAO)
+                        .build());
+        when(programaAtendimentoPort.save(any(ProgramaAtendimento.class)))
+                .thenAnswer(inv -> {
+                    ProgramaAtendimento programa = inv.getArgument(0);
+                    programa.setId(persistedProgramaId);
+                    return programa;
+                });
+        when(nucleoPatientPort.existsById(nucleoPatientId)).thenReturn(true);
+        when(buildProgramaCommandsUseCase.execute(payload.nucleoPatient())).thenReturn(commandPayload);
+
+        doAnswer(inv -> {
+            Callable<ProgramaAtendimentoCreateResponseDTO> businessLogic = inv.getArgument(3);
+            return businessLogic.call();
+        }).when(buildProgramaTemplateUsecase).executeWithPendingGuard(
+                eq(pendingEventId),
+                eq(correlationId.toString()),
+                eq(true),
+                ArgumentMatchers.<Callable<ProgramaAtendimentoCreateResponseDTO>>any());
+
+        ProgramaAtendimentoCreateResponseDTO response = service.register(envelope);
+
+        assertEquals(patientId, response.patientId());
+        verify(acolhimentoInboundService, never()).createNucleoPatient(any(), any(), any(), any(), any());
+        verify(saveAbordagensUseCase).execute(payload.nucleoPatient());
+        verify(createOutboxCommandUseCase).execute(
+                eq(envelope),
+                eq(pendingEventId),
+                eq(persistedProgramaId),
+                eq(commandPayload));
     }
 
     @Test

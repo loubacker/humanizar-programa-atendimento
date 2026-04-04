@@ -14,7 +14,19 @@ import com.humanizar.programaatendimento.domain.model.programa.ProgramaAtendimen
 @Service
 public class BuildProgramaAtendimentoUseCase {
 
-    public ProgramaAtendimento execute(
+    public ProgramaAtendimento buildForCreate(
+            UUID patientId, ProgramaAtendimentoDTO payload, String correlationId) {
+        return ProgramaAtendimento.builder()
+                .id(null)
+                .patientId(patientId)
+                .dataInicio(parseDateTime(payload.dataInicio(), correlationId))
+                .cadastroApp(payload.cadastroApp())
+                .atEscolar(payload.atEscolar())
+                .observacao(payload.observacao())
+                .build();
+    }
+
+    public ProgramaAtendimento buildForUpdate(
             UUID programaId, UUID patientId, ProgramaAtendimentoDTO payload, String correlationId) {
         return ProgramaAtendimento.builder()
                 .id(programaId)
@@ -23,8 +35,6 @@ public class BuildProgramaAtendimentoUseCase {
                 .cadastroApp(payload.cadastroApp())
                 .atEscolar(payload.atEscolar())
                 .observacao(payload.observacao())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
                 .build();
     }
 

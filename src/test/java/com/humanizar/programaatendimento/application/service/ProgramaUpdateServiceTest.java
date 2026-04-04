@@ -18,8 +18,8 @@ import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,8 +37,6 @@ import com.humanizar.programaatendimento.application.usecase.outbox.UpdateOutbox
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaAtendimentoUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaCommandsUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.BuildProgramaTemplateUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.DeleteAbordagensUseCase;
-import com.humanizar.programaatendimento.application.usecase.programa.DeleteProgramaTreeUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveAbordagensUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SavePendingProgramaUseCase;
 import com.humanizar.programaatendimento.application.usecase.programa.SaveProgramaTreeUseCase;
@@ -65,11 +63,7 @@ class ProgramaUpdateServiceTest {
     @Mock
     private SaveProgramaTreeUseCase saveProgramaTreeUseCase;
     @Mock
-    private DeleteProgramaTreeUseCase deleteProgramaTreeUseCase;
-    @Mock
     private SaveAbordagensUseCase saveAbordagensUseCase;
-    @Mock
-    private DeleteAbordagensUseCase deleteAbordagensUseCase;
     @Mock
     private BuildProgramaAtendimentoUseCase buildProgramaAtendimentoUseCase;
     @Mock
@@ -94,9 +88,7 @@ class ProgramaUpdateServiceTest {
                 programaAtendimentoPort,
                 acolhimentoInboundService,
                 saveProgramaTreeUseCase,
-                deleteProgramaTreeUseCase,
                 saveAbordagensUseCase,
-                deleteAbordagensUseCase,
                 buildProgramaAtendimentoUseCase,
                 buildProgramaCommandsUseCase,
                 savePendingProgramaUseCase,
@@ -139,7 +131,7 @@ class ProgramaUpdateServiceTest {
         when(savePendingProgramaUseCase.save(
                 correlationId, patientId, programaId, OperationType.UPDATE, "{\"snapshot\":true}"))
                 .thenReturn(pending);
-        when(buildProgramaAtendimentoUseCase.execute(programaId, patientId, payload, correlationId.toString()))
+        when(buildProgramaAtendimentoUseCase.buildForUpdate(programaId, patientId, payload, correlationId.toString()))
                 .thenReturn(rebuilt);
         when(buildProgramaCommandsUseCase.execute(payload.nucleoPatient())).thenReturn(commandPayload);
 
@@ -159,10 +151,8 @@ class ProgramaUpdateServiceTest {
 
         verify(savePendingProgramaUseCase).save(
                 correlationId, patientId, programaId, OperationType.UPDATE, "{\"snapshot\":true}");
-        verify(deleteProgramaTreeUseCase).execute(programaId);
         verify(saveProgramaTreeUseCase).saveProgramasSemana(programaId, payload.programasSemana(), correlationId.toString());
         verify(saveProgramaTreeUseCase).saveProgramasEscola(programaId, payload.programasEscola(), correlationId.toString());
-        verify(deleteAbordagensUseCase).execute(patientId);
 
         List<AcolhimentoNucleoPatientDTO> expectedNucleoCommands = List.of(
                 new AcolhimentoNucleoPatientDTO(

@@ -13,5 +13,7 @@ public interface NucleoPatientResponsavelPort {
 
     List<NucleoPatientResponsavel> findByNucleoPatientId(UUID nucleoPatientId);
 
+    void deleteById(UUID id);
+
     void deleteByNucleoPatientId(UUID nucleoPatientId);
 }

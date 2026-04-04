@@ -13,5 +13,7 @@ public interface ProgramaEscolaPort {
 
     List<ProgramaEscola> findByProgramaAtendimentoId(UUID programaAtendimentoId);
 
+    void deleteById(UUID id);
+
     void deleteByProgramaAtendimentoId(UUID programaAtendimentoId);
 }
